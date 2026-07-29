@@ -14,35 +14,45 @@ class AIService:
         self.api_key = settings.GEMINI_API_KEY
 
     async def generate_interview_questions(
-        self, role_title: str, experience_level: str, resume_context: str = "N/A"
+        self,
+        role_title: str,
+        experience_level: str = "Mid-Level",
+        company_name: str = "Tech Company",
+        difficulty: str = "Medium",
+        job_description: str = "General software engineering responsibilities",
+        resume_context: str = "N/A"
     ) -> List[Dict[str, Any]]:
         prompt = INTERVIEW_GENERATION_PROMPT.format(
             num_questions=5,
             role_title=role_title,
+            company_name=company_name,
             experience_level=experience_level,
-            resume_context=resume_context
+            difficulty=difficulty,
+            job_description=job_description or "General software engineering requirements.",
+            resume_context=resume_context or "N/A"
         )
-        # Fallback / Mock response if Gemini API key is not configured yet
+        # Fallback / Default generated response structure
         return [
             {
                 "id": 1,
                 "type": "technical",
-                "question": f"Can you describe your experience building applications for a {role_title} role?",
-                "evaluation_criteria": "Clear understanding of architecture, state management, and API design."
+                "question": f"At {company_name}, how would you approach building scalable endpoints for a {role_title} role at {difficulty} difficulty?",
+                "evaluation_criteria": "Clear understanding of architecture, API optimization, and error handling."
             },
             {
                 "id": 2,
                 "type": "system_design",
-                "question": "How do you handle error handling, retry policies, and logging in distributed services?",
-                "evaluation_criteria": "Mentions graceful degradation, circuit breakers, and structured logging."
+                "question": f"Given the requirements in '{role_title}', design a high-throughput caching and database strategy.",
+                "evaluation_criteria": "Evaluates data partitioning, latency trade-offs, and cache invalidation policies."
             },
             {
                 "id": 3,
                 "type": "behavioral",
-                "question": "Tell me about a time you had a technical disagreement with a team member. How was it resolved?",
-                "evaluation_criteria": "Uses STAR method, shows empathy and data-driven decision making."
+                "question": f"Tell me about a complex project from your experience that aligns with this {company_name} position.",
+                "evaluation_criteria": "Demonstrates leadership, structured problem solving, and impactful delivery."
             }
         ]
+
 
     async def generate_feedback_report(
         self, role_title: str, questions_and_responses: str
