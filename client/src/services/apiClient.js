@@ -1,4 +1,4 @@
-// API Client wrapper for communicating with FastAPI backend (http://localhost:8000/api/v1)
+import { STORAGE_KEYS } from "../constants/authKeys";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
 
@@ -8,8 +8,9 @@ class ApiClient {
   }
 
   getToken() {
-    return localStorage.getItem("token") || "";
+    return localStorage.getItem(STORAGE_KEYS.TOKEN) || localStorage.getItem("token") || "";
   }
+
 
   getHeaders(isMultipart = false) {
     const headers = {};

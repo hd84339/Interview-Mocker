@@ -26,12 +26,12 @@ function MainLayout() {
     navigate("/login");
   };
 
-  const navLinks = [
+  const navLinks = user ? [
     { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
     { label: "New Interview", path: "/create-interview", icon: PlusCircle },
     { label: "Reports", path: "/report", icon: FileText },
     { label: "Settings", path: "/settings", icon: SettingsIcon },
-  ];
+  ] : [];
 
   const isActive = (path) => {
     if (path === "/" && location.pathname === "/") return true;
@@ -80,13 +80,15 @@ function MainLayout() {
 
             {/* Right Action Section */}
             <div className="hidden md:flex items-center gap-4">
-              <Link
-                to="/create-interview"
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-600/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                <span>Start Practice</span>
-              </Link>
+              {user && (
+                <Link
+                  to="/create-interview"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-600/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  <span>Start Practice</span>
+                </Link>
+              )}
 
               {user ? (
                 /* Profile Dropdown */

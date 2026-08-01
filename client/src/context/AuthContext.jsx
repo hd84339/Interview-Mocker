@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from "react";
+import { STORAGE_KEYS } from "../constants/authKeys";
 
 const AuthContext = createContext(null);
 
@@ -12,7 +13,7 @@ const DEFAULT_DEMO_USER = {
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem("mockora_user");
+    const savedUser = localStorage.getItem(STORAGE_KEYS.USER) || localStorage.getItem("mockora_user");
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
@@ -25,16 +26,19 @@ export function AuthProvider({ children }) {
       targetRole: DEFAULT_DEMO_USER.targetRole,
     };
     setUser(newUser);
-    localStorage.setItem("mockora_user", JSON.stringify(newUser));
-    localStorage.setItem("token", "mockora_jwt_token_" + Date.now());
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(newUser));
+    localStorage.setItem(STORAGE_KEYS.TOKEN, "mockhora_jwt_token_" + Date.now());
     return newUser;
   };
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem(STORAGE_KEYS.USER);
+    localStorage.removeItem(STORAGE_KEYS.TOKEN);
     localStorage.removeItem("mockora_user");
     localStorage.removeItem("token");
   };
+
 
   return (
     <AuthContext.Provider value={{ user, setUser, loginUser, logout }}>

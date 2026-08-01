@@ -1,44 +1,27 @@
-import { signInWithPopup } from "firebase/auth";
-import { auth, googleProvider } from "../firebase/firebaseConfig";
 import { apiClient } from "./apiClient";
+import { STORAGE_KEYS } from "../constants/authKeys";
 
 export const authService = {
-  async loginWithGoogle() {
-    try {
-      if (!auth || !googleProvider) {
-        throw new Error("Firebase Google Provider not initialized");
-      }
-      const result = await signInWithPopup(auth, googleProvider);
-      const token = await result.user.getIdToken();
-      
-      try {
-        await apiClient.post("/auth/google", { id_token: token });
-      } catch {
-        // Continue if backend verification fails in dev mode
-      }
-
-      return {
-        user: {
-          uid: result.user.uid,
-          displayName: result.user.displayName || "Google Candidate",
-          email: result.user.email,
-          photoURL: result.user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(result.user.displayName || "Google Candidate")}`,
-        },
-        token,
-      };
-    } catch (err) {
-      console.warn("Google Auth popup notice:", err.message);
-      return {
-        user: {
-          uid: "usr_google_demo",
-          displayName: "Google Candidate",
-          email: "candidate@gmail.com",
-          photoURL: "https://ui-avatars.com/api/?name=Google+Candidate&background=ea4335&color=fff",
-        },
-        token: "demo_google_jwt_token",
-      };
+  async loginWithGoogle(idToken) {
+    if (!idToken) {
+      throw new Error("Missing Google ID token credential.");
     }
+
+    // Send id_token credential to backend for Google token verification & DB user creation
+    const response = await apiClient.post("/auth/google", { id_token: idToken });
+
+    if (response?.access_token && response?.user) {
+      localStorage.setItem(STORAGE_KEYS.TOKEN, response.access_token);
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.user));
+    }
+
+    return {
+      token: response?.access_token,
+      user: response?.user,
+    };
   },
+
+
 
   async login(email, password) {
     try {

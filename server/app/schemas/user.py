@@ -27,5 +27,14 @@ class Token(BaseModel):
     token_type: str = "bearer"
 
 
+class TokenWithUser(Token):
+    user: UserResponse
+
+
 class TokenData(BaseModel):
     email: Optional[str] = None
+
+
+class GoogleAuthRequest(BaseModel):
+    id_token: str
+
