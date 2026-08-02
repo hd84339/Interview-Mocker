@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    APP_NAME: str = "Mockora"
+    APP_NAME: str = "Mockhora"
     APP_ENV: str = "development"
     DEBUG: bool = True
     API_V1_STR: str = "/api/v1"
@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: str = ""
     GOOGLE_REDIRECT_URI: str = "http://localhost:5173/auth/google/callback"
 
-    DATABASE_URL: str = "sqlite:///./mockora.db"
+    DATABASE_URL: str = "sqlite:///./mockhora.db"
     GEMINI_API_KEY: str = ""
     UPLOAD_DIR: str = "app/uploads/resumes"
     MAX_UPLOAD_SIZE_MB: int = 10

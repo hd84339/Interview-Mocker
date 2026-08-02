@@ -38,7 +38,7 @@ function HowItWorks() {
             Step-by-Step Guide
           </h2>
           <p className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            How Mockora Works
+            How Mockhora Works
           </p>
           <p className="text-slate-600 mt-4 text-base sm:text-lg">
             Four simple steps from upload to detailed feedback report.

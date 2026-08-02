@@ -13,7 +13,7 @@ const DEFAULT_DEMO_USER = {
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem(STORAGE_KEYS.USER) || localStorage.getItem("mockora_user");
+    const savedUser = localStorage.getItem(STORAGE_KEYS.USER) || localStorage.getItem("mockhora_user");
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
@@ -35,7 +35,7 @@ export function AuthProvider({ children }) {
     setUser(null);
     localStorage.removeItem(STORAGE_KEYS.USER);
     localStorage.removeItem(STORAGE_KEYS.TOKEN);
-    localStorage.removeItem("mockora_user");
+    localStorage.removeItem("mockhora_user");
     localStorage.removeItem("token");
   };
 

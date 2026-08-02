@@ -6,7 +6,7 @@ function Footer() {
     <footer className="bg-slate-900 text-slate-400 py-12 sm:py-16 border-t border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10 pb-12 border-b border-slate-800">
-          
+
           {/* Brand Col */}
           <div className="sm:col-span-2 md:col-span-1 space-y-4">
             <Link to="/" className="flex items-center gap-2.5">
@@ -14,7 +14,7 @@ function Footer() {
                 <Sparkles className="w-5 h-5" />
               </div>
               <span className="text-xl font-bold text-white tracking-tight">
-                Mock<span className="text-blue-500">ora</span>
+                Mock<span className="text-blue-500">Hora</span>
               </span>
             </Link>
             <p className="text-sm text-slate-400 leading-relaxed">
@@ -62,7 +62,7 @@ function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
-          <p>© {new Date().getFullYear()} Mockora. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Mockhora. All rights reserved.</p>
           <div className="flex gap-6">
             <a href="#" className="hover:text-slate-400 transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-slate-400 transition-colors">Terms of Service</a>

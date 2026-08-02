@@ -52,7 +52,7 @@ function MainLayout() {
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
-                Mockora
+                Mockhora
               </span>
             </Link>
 
@@ -201,7 +201,7 @@ function MainLayout() {
 
       {/* Footer */}
       <footer className="border-t border-slate-800/80 bg-slate-950/80 py-6 text-center text-xs text-slate-500">
-        <p>© 2026 Mockora. Real-Time AI Interview Platform. All rights reserved.</p>
+        <p>© 2026 Mockhora. Real-Time AI Interview Platform. All rights reserved.</p>
       </footer>
     </div>
   );

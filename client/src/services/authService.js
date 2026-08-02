@@ -28,7 +28,7 @@ export const authService = {
       return await apiClient.post("/auth/login", { username: email, password });
     } catch {
       return {
-        access_token: "mockora_jwt_token_demo",
+        access_token: "mockhora_jwt_token_demo",
         token_type: "bearer",
         user: {
           email,

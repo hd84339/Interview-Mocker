@@ -1,6 +1,6 @@
-# Mockora | AI-Powered Mock Interview Platform
+# Mockhora | AI-Powered Mock Interview Platform
 
-**Mockora** is a real-time AI interview preparation platform designed to help job seekers practice technical, behavioral, and system design interviews with AI-driven voice and text feedback.
+**Mockhora** is a real-time AI interview preparation platform designed to help job seekers practice technical, behavioral, and system design interviews with AI-driven voice and text feedback.
 
 ---
 
@@ -17,7 +17,7 @@
 ## 📁 Repository Structure
 
 ```
-Mockora/
+Mockhora/
 ├── client/              # Vite + React Frontend Application
 │   ├── src/
 │   │   ├── components/  # Landing page, layout & reusable UI components
@@ -88,9 +88,9 @@ The frontend web app will be available at [http://localhost:5173](http://localho
 Create a `.env` file in `server/` with the following variables:
 
 ```env
-APP_NAME=Mockora
+APP_NAME=Mockhora
 DEBUG=True
-DATABASE_URL=sqlite:///./mockora.db
+DATABASE_URL=sqlite:///./mockhora.db
 GEMINI_API_KEY=your_gemini_api_key_here
 SECRET_KEY=your_super_secret_jwt_key
 ```
@@ -99,4 +99,4 @@ SECRET_KEY=your_super_secret_jwt_key
 
 ## 📄 License
 
-MIT License © Mockora. All rights reserved.
+MIT License © Mockhora. All rights reserved.

@@ -24,7 +24,7 @@ function SettingsPage() {
       targetRole,
     };
     if (setUser) setUser(updatedUser);
-    localStorage.setItem("mockora_user", JSON.stringify(updatedUser));
+    localStorage.setItem("mockhora_user", JSON.stringify(updatedUser));
 
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
@@ -32,7 +32,7 @@ function SettingsPage() {
 
   const testAudio = () => {
     if ('speechSynthesis' in window) {
-      const msg = new SpeechSynthesisUtterance("Welcome to Mockora AI voice test.");
+      const msg = new SpeechSynthesisUtterance("Welcome to Mockhora AI voice test.");
       msg.rate = speechSpeed;
       window.speechSynthesis.speak(msg);
     } else {

@@ -15,7 +15,7 @@ os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 app = FastAPI(
     title=settings.APP_NAME,
     version="1.0.0",
-    description="Mockora AI Interview Platform API",
+    description="Mockhora AI Interview Platform API",
     debug=settings.DEBUG
 )
 

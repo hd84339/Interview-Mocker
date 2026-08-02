@@ -3,7 +3,7 @@ import { ChevronDown, HelpCircle } from "lucide-react";
 
 const FAQ_ITEMS = [
   {
-    question: "How does Mockora analyze my resume?",
+    question: "How does Mockhora analyze my resume?",
     answer: "When you upload your PDF or TXT resume, our AI parses key skill sets, projects, and target role requirements. It then dynamically synthesizes technical and behavioral questions aligned with your actual experience level."
   },
   {
@@ -45,7 +45,7 @@ function Faq() {
             Frequently Asked Questions
           </h2>
           <p className="text-slate-600 mt-4 text-base sm:text-lg">
-            Everything you need to know about preparing with Mockora.
+            Everything you need to know about preparing with Mockhora.
           </p>
         </div>
 

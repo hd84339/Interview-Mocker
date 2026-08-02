@@ -23,7 +23,7 @@ function Navbar() {
               <Sparkles className="w-5 h-5" />
             </div>
             <span className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-              Mock<span className="text-blue-600">ora</span>
+              Mock<span className="text-blue-600">Hora</span>
             </span>
           </Link>
 

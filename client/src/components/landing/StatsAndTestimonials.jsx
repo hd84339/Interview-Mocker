@@ -12,7 +12,7 @@ const TESTIMONIALS = [
     name: "Alex Rivera",
     role: "Senior Software Engineer @ Meta",
     image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
-    content: "Mockora changed how I prep. The real-time AI voice feedback caught filler words and structural gaps I never noticed during solo practice."
+    content: "Mockhora changed how I prep. The real-time AI voice feedback caught filler words and structural gaps I never noticed during solo practice."
   },
   {
     name: "Sarah Chen",
@@ -24,7 +24,7 @@ const TESTIMONIALS = [
     name: "Michael Johnson",
     role: "Product Manager @ Google",
     image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
-    content: "Behavioral interview prep used to feel awkward. Practicing with Mockora gave me the exact confidence needed to land my dream offer."
+    content: "Behavioral interview prep used to feel awkward. Practicing with Mockhora gave me the exact confidence needed to land my dream offer."
   }
 ];
 
