@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "supersecretkey_change_me_in_production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
+    ADMIN_EMAIL: str = "hd84339@gmail.com"
 
     GOOGLE_CLIENT_ID: str = ""
     GOOGLE_CLIENT_SECRET: str = ""

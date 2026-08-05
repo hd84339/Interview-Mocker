@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config.settings import settings
 from app.database.connection import engine
 from app.database.base import Base
-from app.routers import auth_router, interview_router, resume_router, report_router, camera_router
+from app.routers import auth_router, interview_router, resume_router, report_router, camera_router, admin_router
 
 # Create database tables automatically on startup
 Base.metadata.create_all(bind=engine)
@@ -35,6 +35,7 @@ app.include_router(interview_router, prefix=api_prefix)
 app.include_router(resume_router, prefix=api_prefix)
 app.include_router(report_router, prefix=api_prefix)
 app.include_router(camera_router, prefix=api_prefix)
+app.include_router(admin_router, prefix=api_prefix)
 
 
 

@@ -101,6 +101,9 @@ export const interviewService = {
 
   async getReport(interviewId) {
     try {
+      if (!interviewId || interviewId === "int_demo") {
+        throw new Error("Demo interview, skipping API call");
+      }
       return await apiClient.get(`/reports/${interviewId}`);
     } catch {
       return {

@@ -11,6 +11,7 @@ import CreateInterviewPage from "../pages/CreateInterviewPage";
 import InterviewPage from "../pages/InterviewPage";
 import ReportPage from "../pages/ReportPage";
 import SettingsPage from "../pages/SettingsPage";
+import AdminPage from "../pages/AdminPage";
 import NotFoundPage from "../pages/NotFoundPage";
 
 function AppRoutes() {
@@ -28,6 +29,7 @@ function AppRoutes() {
             <Route path="/interview" element={<InterviewPage />} />
             <Route path="/report" element={<ReportPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/admin" element={<AdminPage />} />
           </Route>
         </Route>
 

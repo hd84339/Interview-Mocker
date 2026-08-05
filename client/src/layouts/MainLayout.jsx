@@ -10,7 +10,8 @@ import {
   User as UserIcon,
   ChevronDown,
   Menu,
-  X
+  X,
+  ShieldAlert
 } from "lucide-react";
 import { useAuthContext } from "../context/AuthContext";
 
@@ -31,6 +32,7 @@ function MainLayout() {
     { label: "New Interview", path: "/create-interview", icon: PlusCircle },
     { label: "Reports", path: "/report", icon: FileText },
     { label: "Settings", path: "/settings", icon: SettingsIcon },
+    ...(user.is_admin || user.email === "hd84339@gmail.com" ? [{ label: "Admin Panel", path: "/admin", icon: ShieldAlert }] : [])
   ] : [];
 
   const isActive = (path) => {
