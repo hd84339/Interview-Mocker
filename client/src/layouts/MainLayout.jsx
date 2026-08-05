@@ -103,7 +103,7 @@ function MainLayout() {
                       className="w-8 h-8 rounded-lg object-cover ring-2 ring-indigo-500/30"
                     />
                     <span className="text-sm font-medium text-slate-200 max-w-[120px] truncate">
-                      {user.displayName || "Candidate"}
+                      {user.full_name || user.displayName || user.name || "Candidate"}
                     </span>
                     <ChevronDown className="w-4 h-4 text-slate-400" />
                   </button>
@@ -114,7 +114,7 @@ function MainLayout() {
                       onMouseLeave={() => setProfileDropdownOpen(false)}
                     >
                       <div className="px-3 py-2.5 border-b border-slate-800 mb-1">
-                        <p className="text-sm font-semibold text-white truncate">{user.displayName || "User"}</p>
+                        <p className="text-sm font-semibold text-white truncate">{user.full_name || user.displayName || user.name || "User"}</p>
                         <p className="text-xs text-slate-400 truncate">{user.email}</p>
                       </div>
                       <Link

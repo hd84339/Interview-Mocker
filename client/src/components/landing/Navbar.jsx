@@ -1,9 +1,21 @@
 import { useState } from "react";
-import { Sparkles, ArrowRight, Menu, X, ChevronRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Sparkles, ArrowRight, Menu, X, ChevronRight, LogOut, LayoutDashboard } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuthContext } from "../../context/AuthContext";
 
 function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, logout } = useAuthContext();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    closeMobileMenu();
+    navigate('/');
+  };
+
+  const userName = user?.full_name || user?.displayName || user?.name;
+  const userAvatar = user?.avatar_url || user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=6366f1&color=fff`;
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen((prev) => !prev);
@@ -53,19 +65,37 @@ function Navbar() {
 
           {/* Desktop Action Buttons */}
           <div className="hidden md:flex items-center gap-4">
-            <Link
-              to="/login"
-              className="text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors px-3 py-2"
-            >
-              Log In
-            </Link>
-            <Link
-              to="/create-interview"
-              className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
-            >
-              <span>Get Started</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+            {user ? (
+              <div className="flex items-center gap-4">
+                <Link to="/dashboard" className="flex items-center gap-2 hover:bg-slate-50 px-3 py-1.5 rounded-lg transition-colors">
+                  <img src={userAvatar} alt={userName} className="w-8 h-8 rounded-full border border-slate-200" />
+                  <span className="text-sm font-semibold text-slate-700">{userName}</span>
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="text-sm font-semibold text-slate-500 hover:text-red-600 transition-colors p-2 rounded-lg hover:bg-red-50"
+                  title="Log out"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors px-3 py-2"
+                >
+                  Log In
+                </Link>
+                <Link
+                  to="/create-interview"
+                  className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
+                >
+                  <span>Get Started</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Hamburger Button */}
@@ -125,21 +155,50 @@ function Navbar() {
           </nav>
 
           <div className="pt-2 border-t border-slate-100 flex flex-col gap-3">
-            <Link
-              to="/login"
-              onClick={closeMobileMenu}
-              className="w-full text-center py-3 rounded-xl font-semibold text-slate-700 hover:bg-slate-100 transition-colors border border-slate-200"
-            >
-              Log In
-            </Link>
-            <Link
-              to="/create-interview"
-              onClick={closeMobileMenu}
-              className="w-full text-center py-3 rounded-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/25 transition-all flex items-center justify-center gap-2"
-            >
-              <span>Get Started Free</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+            {user ? (
+              <>
+                <div className="flex items-center gap-3 px-3 py-2">
+                  <img src={userAvatar} alt={userName} className="w-10 h-10 rounded-full border border-slate-200" />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-slate-800">{userName}</span>
+                    <span className="text-xs text-slate-500">{user.email}</span>
+                  </div>
+                </div>
+                <Link
+                  to="/dashboard"
+                  onClick={closeMobileMenu}
+                  className="w-full text-center py-3 rounded-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/25 transition-all flex items-center justify-center gap-2"
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  <span>Dashboard</span>
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-center py-3 rounded-xl font-semibold text-red-600 hover:bg-red-50 transition-colors border border-red-100 flex items-center justify-center gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Log Out</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  onClick={closeMobileMenu}
+                  className="w-full text-center py-3 rounded-xl font-semibold text-slate-700 hover:bg-slate-100 transition-colors border border-slate-200"
+                >
+                  Log In
+                </Link>
+                <Link
+                  to="/create-interview"
+                  onClick={closeMobileMenu}
+                  className="w-full text-center py-3 rounded-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/25 transition-all flex items-center justify-center gap-2"
+                >
+                  <span>Get Started Free</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

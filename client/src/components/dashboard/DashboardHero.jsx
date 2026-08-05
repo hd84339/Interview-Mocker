@@ -14,7 +14,7 @@ export default function DashboardHero({ user }) {
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white">
             Welcome back,{" "}
             <span className="bg-gradient-to-r from-indigo-300 via-purple-300 to-pink-300 bg-clip-text text-transparent">
-              {user?.displayName || "Alex"}
+              {user?.full_name || user?.displayName || user?.name || "User"}
             </span>{" "}
             👋
           </h1>

@@ -11,6 +11,7 @@ function LoginPage() {
   const { loginUser, setUser } = useAuthContext();
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [demoName, setDemoName] = useState("");
 
   const handleGoogleSuccess = async (credential) => {
     setLoading(true);
@@ -36,7 +37,9 @@ function LoginPage() {
   };
 
   const handleDemoQuickLogin = () => {
-    loginUser("Alex Morgan", "alex.morgan@example.com");
+    if (!demoName.trim()) return;
+    const email = `${demoName.toLowerCase().replace(/\s+/g, '.')}@demo.com`;
+    loginUser(demoName.trim(), email);
     navigate("/dashboard");
   };
 
@@ -103,7 +106,7 @@ function LoginPage() {
 
 
           {/* Quick Demo Login Banner */}
-          <div className="bg-gradient-to-r from-indigo-950/60 to-purple-950/60 border border-indigo-500/30 rounded-2xl p-4 flex items-center justify-between">
+          <div className="bg-gradient-to-r from-indigo-950/60 to-purple-950/60 border border-indigo-500/30 rounded-2xl p-4 flex flex-col gap-3">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
                 <Zap className="w-4 h-4" />
@@ -113,13 +116,24 @@ function LoginPage() {
                 <p className="text-[11px] text-slate-400">Try without Google Sign-In</p>
               </div>
             </div>
-            <button
-              onClick={handleDemoQuickLogin}
-              type="button"
-              className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30 transition-all hover:scale-105 active:scale-95"
-            >
-              Quick Login
-            </button>
+            <div className="flex items-center gap-2 mt-1">
+              <input 
+                type="text" 
+                placeholder="Enter your name" 
+                value={demoName}
+                onChange={(e) => setDemoName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleDemoQuickLogin()}
+                className="flex-1 bg-slate-900/50 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+              />
+              <button
+                onClick={handleDemoQuickLogin}
+                type="button"
+                disabled={!demoName.trim()}
+                className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              >
+                Quick Login
+              </button>
+            </div>
           </div>
 
           {/* Key Features Bullet List */}

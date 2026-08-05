@@ -5,8 +5,8 @@ import { useAuthContext } from "../context/AuthContext";
 function SettingsPage() {
   const { user, setUser } = useAuthContext();
 
-  const [displayName, setDisplayName] = useState(user?.displayName || "Alex Morgan");
-  const [email, setEmail] = useState(user?.email || "alex.morgan@example.com");
+  const [displayName, setDisplayName] = useState(user?.full_name || user?.displayName || user?.name || "");
+  const [email, setEmail] = useState(user?.email || "");
   const [targetRole, setTargetRole] = useState(user?.targetRole || "Senior Full Stack Engineer");
   
   const [aiVoice, setAiVoice] = useState("en-US-Neural-Standard");
