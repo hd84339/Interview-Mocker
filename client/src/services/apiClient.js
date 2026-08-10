@@ -25,6 +25,11 @@ class ApiClient {
   }
 
   async request(endpoint, options = {}) {
+    const token = this.getToken();
+    if (token && token.startsWith("mockhora_jwt_token_")) {
+      throw new Error("Demo token, skipping API call");
+    }
+
     const url = `${this.baseUrl}${endpoint}`;
     const isMultipart = options.body instanceof FormData;
 

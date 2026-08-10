@@ -9,7 +9,6 @@ class ResumeResponse(BaseModel):
     file_name: str
     parsed_skills: Optional[List[str]] = None
     parsed_summary: Optional[str] = None
-    is_active: bool
     created_at: datetime
 
     class Config:

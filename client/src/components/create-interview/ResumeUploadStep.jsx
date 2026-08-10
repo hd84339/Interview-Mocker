@@ -58,8 +58,9 @@ export default function ResumeUploadStep({
               {resumeFile.name}
             </h3>
             <p className="text-xs text-slate-400">
-              {(resumeFile.size / (1024 * 1024)).toFixed(2)} MB • Uploaded &
-              Parsed Successfully
+              {resumeFile.size > 0
+                ? `${(resumeFile.size / (1024 * 1024)).toFixed(2)} MB • Uploaded & Parsed Successfully`
+                : "Previously Uploaded Resume"}
             </p>
 
             {resumeData?.skills && (
@@ -82,7 +83,7 @@ export default function ResumeUploadStep({
               }}
               className="text-xs text-slate-400 hover:text-rose-400 underline pt-2"
             >
-              Remove & Change File
+              Replace Resume
             </button>
           </div>
         ) : (

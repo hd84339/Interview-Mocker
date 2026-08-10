@@ -48,6 +48,20 @@ function InterviewPage() {
     return () => clearInterval(timer);
   }, []);
 
+  // Eye Contact Simulation effect
+  useEffect(() => {
+    if (!cameraActive) return;
+    const interval = setInterval(() => {
+      setEyeContactScore((prev) => {
+        // Fluctuate the score randomly by a small amount, keeping it between 70 and 99
+        const change = Math.floor(Math.random() * 7) - 3; // -3 to +3
+        const next = prev + change;
+        return Math.min(99, Math.max(70, next));
+      });
+    }, 2000); // update every 2 seconds
+    return () => clearInterval(interval);
+  }, [cameraActive]);
+
   // WebCam Video Stream Simulation / WebCam request
   useEffect(() => {
     let currentStream = null;

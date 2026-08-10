@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.database.connection import get_db
 from app.schemas.user import UserCreate, UserResponse, Token, TokenWithUser, GoogleAuthRequest
@@ -9,10 +8,6 @@ from app.auth.google_oauth import verify_google_token
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-
-class DemoAuthRequest(BaseModel):
-    name: str
-    email: str
 
 @router.post("/register", response_model=UserResponse)
 def register_user(user_in: UserCreate, db: Session = Depends(get_db)):
@@ -84,26 +79,6 @@ async def google_auth(req: GoogleAuthRequest, db: Session = Depends(get_db)):
         "user": user
     }
 
-
-@router.post("/demo", response_model=TokenWithUser)
-def demo_auth(req: DemoAuthRequest, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == req.email).first()
-    if not user:
-        user = User(
-            email=req.email,
-            full_name=req.name,
-            avatar_url=f"https://ui-avatars.com/api/?name={encode_name(req.name)}&background=6366f1&color=fff"
-        )
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-    
-    access_token = create_access_token(data={"sub": user.email})
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user": user
-    }
 
 def encode_name(name: str) -> str:
     from urllib.parse import quote

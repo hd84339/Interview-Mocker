@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, CheckCircle2 } from "lucide-react";
 import { resumeService } from "../services/resumeService";
@@ -27,6 +27,22 @@ function CreateInterviewPage() {
   const [enableCamera, setEnableCamera] = useState(true);
 
   const [launching, setLaunching] = useState(false);
+
+  useEffect(() => {
+    async function loadLatestResume() {
+      try {
+        const latest = await resumeService.getLatestResume();
+        if (latest) {
+          setResumeData(latest);
+          // Create a mock file object for UI display
+          setResumeFile({ name: latest.file_name || latest.filename, size: 0 });
+        }
+      } catch (err) {
+        console.error("Failed to load latest resume", err);
+      }
+    }
+    loadLatestResume();
+  }, []);
 
   const handleFileUpload = async (file) => {
     if (!file) return;

@@ -9,22 +9,24 @@ class ResumeService:
     async def process_resume_file(
         self, db: Session, user_id: int, file_name: str, file_path: str
     ) -> Resume:
-        existing_resumes = db.query(Resume).filter(
-            Resume.user_id == user_id,
-            Resume.is_active == True
-        ).all()
-        for resume in existing_resumes:
-            resume.is_active = False
+        # Delete old resumes for this user
+        old_resumes = db.query(Resume).filter(Resume.user_id == user_id).all()
+        for r in old_resumes:
+            if os.path.exists(r.file_path):
+                try:
+                    os.remove(r.file_path)
+                except Exception:
+                    pass
+            db.delete(r)
+        db.commit()
 
         parsed_data = await ai_service.parse_resume_text(f"Sample parsed content for {file_name}")
         db_resume = Resume(
             user_id=user_id,
             file_name=file_name,
             file_path=file_path,
-            file_path=file_path,
             parsed_skills=parsed_data.get("skills", []),
-            parsed_summary=parsed_data.get("summary", ""),
-            is_active=True
+            parsed_summary=parsed_data.get("summary", "")
         )
         db.add(db_resume)
         db.commit()
@@ -36,23 +38,8 @@ class ResumeService:
 
         return db_resume
 
-    def activate_resume(self, db: Session, user_id: int, resume_id: int) -> Resume:
-        resume_to_activate = db.query(Resume).filter(Resume.id == resume_id, Resume.user_id == user_id).first()
-        if not resume_to_activate:
-            return None
-
-        existing_resumes = db.query(Resume).filter(
-            Resume.user_id == user_id,
-            Resume.is_active == True
-        ).all()
-        for r in existing_resumes:
-            r.is_active = False
-
-        resume_to_activate.is_active = True
-        db.commit()
-        db.refresh(resume_to_activate)
-        return resume_to_activate
-
+    def get_latest_resume(self, db: Session, user_id: int) -> Resume | None:
+        return db.query(Resume).filter(Resume.user_id == user_id).order_by(Resume.created_at.desc()).first()
 
 resume_service = ResumeService()
 

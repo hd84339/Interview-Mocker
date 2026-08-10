@@ -36,20 +36,11 @@ function LoginPage() {
     }
   };
 
-  const handleDemoQuickLogin = async () => {
+  const handleDemoQuickLogin = () => {
     if (!demoName.trim()) return;
-    setLoading(true);
-    setErrorMessage("");
-    try {
-      const email = `${demoName.toLowerCase().replace(/\s+/g, '.')}@demo.com`;
-      await loginUser(demoName.trim(), email);
-      navigate("/dashboard");
-    } catch (err) {
-      console.error(err);
-      setErrorMessage("Demo login failed.");
-    } finally {
-      setLoading(false);
-    }
+    const email = `${demoName.toLowerCase().replace(/\s+/g, '.')}@demo.com`;
+    loginUser(demoName.trim(), email);
+    navigate("/dashboard");
   };
 
   return (
@@ -103,7 +94,6 @@ function LoginPage() {
                   onError={() => {
                     setErrorMessage("Google Sign In failed. Please check your Google account.");
                   }}
-                  useOneTap
                   theme="filled_blue"
                   shape="circle"
                   text="continue_with"
