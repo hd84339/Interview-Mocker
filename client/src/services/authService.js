@@ -21,7 +21,17 @@ export const authService = {
     };
   },
 
-
+  async demoLogin(name, email) {
+    const response = await apiClient.post("/auth/demo", { name, email });
+    if (response?.access_token && response?.user) {
+      localStorage.setItem(STORAGE_KEYS.TOKEN, response.access_token);
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.user));
+    }
+    return {
+      token: response?.access_token,
+      user: response?.user,
+    };
+  },
 
   async login(email, password) {
     try {

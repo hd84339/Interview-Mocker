@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from "react";
 import { STORAGE_KEYS } from "../constants/authKeys";
+import { authService } from "../services/authService";
 
 const AuthContext = createContext(null);
 
@@ -17,18 +18,27 @@ export function AuthProvider({ children }) {
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
-  const loginUser = (name, emailStr) => {
-    const newUser = {
-      uid: "usr_" + Math.random().toString(36).substr(2, 9),
-      displayName: name || DEFAULT_DEMO_USER.displayName,
-      email: emailStr || DEFAULT_DEMO_USER.email,
-      photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(name || DEFAULT_DEMO_USER.displayName)}&background=6366f1&color=fff`,
-      targetRole: DEFAULT_DEMO_USER.targetRole,
-    };
-    setUser(newUser);
-    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(newUser));
-    localStorage.setItem(STORAGE_KEYS.TOKEN, "mockhora_jwt_token_" + Date.now());
-    return newUser;
+  const loginUser = async (name, emailStr) => {
+    try {
+      const res = await authService.demoLogin(name, emailStr);
+      if (res?.user) {
+        setUser(res.user);
+        return res.user;
+      }
+    } catch (error) {
+      console.error("Demo login backend failed, falling back to local demo user", error);
+      const newUser = {
+        uid: "usr_" + Math.random().toString(36).substr(2, 9),
+        displayName: name || DEFAULT_DEMO_USER.displayName,
+        email: emailStr || DEFAULT_DEMO_USER.email,
+        photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(name || DEFAULT_DEMO_USER.displayName)}&background=6366f1&color=fff`,
+        targetRole: DEFAULT_DEMO_USER.targetRole,
+      };
+      setUser(newUser);
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(newUser));
+      localStorage.setItem(STORAGE_KEYS.TOKEN, "mockhora_jwt_token_" + Date.now());
+      return newUser;
+    }
   };
 
   const logout = () => {

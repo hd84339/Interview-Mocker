@@ -36,11 +36,20 @@ function LoginPage() {
     }
   };
 
-  const handleDemoQuickLogin = () => {
+  const handleDemoQuickLogin = async () => {
     if (!demoName.trim()) return;
-    const email = `${demoName.toLowerCase().replace(/\s+/g, '.')}@demo.com`;
-    loginUser(demoName.trim(), email);
-    navigate("/dashboard");
+    setLoading(true);
+    setErrorMessage("");
+    try {
+      const email = `${demoName.toLowerCase().replace(/\s+/g, '.')}@demo.com`;
+      await loginUser(demoName.trim(), email);
+      navigate("/dashboard");
+    } catch (err) {
+      console.error(err);
+      setErrorMessage("Demo login failed.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
