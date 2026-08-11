@@ -9,7 +9,8 @@ import LoginPage from "../pages/LoginPage";
 import DashboardPage from "../pages/DashboardPage";
 import CreateInterviewPage from "../pages/CreateInterviewPage";
 import InterviewPage from "../pages/InterviewPage";
-import ReportPage from "../pages/ReportPage";
+import ReportListPage from "../pages/ReportListPage";
+import ReportDetailPage from "../pages/ReportDetailPage";
 import SettingsPage from "../pages/SettingsPage";
 import AdminPage from "../pages/AdminPage";
 import NotFoundPage from "../pages/NotFoundPage";
@@ -27,7 +28,8 @@ function AppRoutes() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/create-interview" element={<CreateInterviewPage />} />
             <Route path="/interview" element={<InterviewPage />} />
-            <Route path="/report" element={<ReportPage />} />
+            <Route path="/report" element={<ReportListPage />} />
+            <Route path="/report/:id" element={<ReportDetailPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/admin" element={<AdminPage />} />
           </Route>

@@ -1,32 +1,45 @@
 import { Trophy, TrendingUp, Clock, Target, CheckCircle2 } from "lucide-react";
 
-export default function DashboardStats() {
+export default function DashboardStats({ interviews = [] }) {
+  const completedInterviews = interviews.filter(i => i.status === 'Completed');
+  const totalCompleted = completedInterviews.length;
+  
+  const avgScore = totalCompleted > 0 
+    ? Math.round(completedInterviews.reduce((acc, curr) => acc + curr.score, 0) / totalCompleted)
+    : 0;
+  
+  // Estimate: 5 minutes per question
+  const totalQuestions = interviews.reduce((acc, curr) => acc + (curr.questions_count || 0), 0);
+  const practiceTimeHours = (totalQuestions * 5 / 60).toFixed(1);
+
+  const targetReadiness = interviews[0]?.level || "N/A";
+
   const stats = [
     {
       label: "Interviews Completed",
-      value: "12",
-      change: "+3 this week",
+      value: totalCompleted.toString(),
+      change: `${interviews.length - totalCompleted} aborted`,
       icon: Trophy,
       color: "from-amber-500/20 to-orange-500/20 text-amber-400",
     },
     {
       label: "Average Performance Score",
-      value: "86%",
-      change: "+5% overall",
+      value: `${avgScore}%`,
+      change: "Based on completed",
       icon: TrendingUp,
       color: "from-emerald-500/20 to-teal-500/20 text-emerald-400",
     },
     {
       label: "Practice Time",
-      value: "14.5 hrs",
-      change: "4 sessions",
+      value: `${practiceTimeHours} hrs`,
+      change: `${interviews.length} total sessions`,
       icon: Clock,
       color: "from-indigo-500/20 to-purple-500/20 text-indigo-400",
     },
     {
       label: "Target Role Readiness",
-      value: "Senior Level",
-      change: "Top 10%",
+      value: targetReadiness,
+      change: "Based on latest session",
       icon: Target,
       color: "from-pink-500/20 to-rose-500/20 text-pink-400",
     },

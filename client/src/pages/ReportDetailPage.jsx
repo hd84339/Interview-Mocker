@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { 
   Award, 
   CheckCircle2, 
@@ -13,12 +13,14 @@ import {
   Target, 
   TrendingUp, 
   Eye, 
-  MessageSquare 
+  MessageSquare,
+  Trash2
 } from "lucide-react";
 import { interviewService } from "../services/interviewService";
 
-function ReportPage() {
+function ReportDetailPage() {
   const navigate = useNavigate();
+  const { id } = useParams();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [expandedQIndex, setExpandedQIndex] = useState(0);
@@ -26,9 +28,7 @@ function ReportPage() {
   useEffect(() => {
     async function loadReport() {
       try {
-        const stored = sessionStorage.getItem("active_interview_session");
-        const session = stored ? JSON.parse(stored) : null;
-        const data = await interviewService.getReport(session?.id || "int_demo");
+        const data = await interviewService.getReport(id || "int_demo");
         setReport(data);
       } catch (err) {
         console.error("Error loading report:", err);
@@ -37,7 +37,18 @@ function ReportPage() {
       }
     }
     loadReport();
-  }, []);
+  }, [id]);
+
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this report? This action cannot be undone.")) {
+      try {
+        await interviewService.deleteReport(id);
+        navigate("/report");
+      } catch (err) {
+        console.error("Failed to delete report:", err);
+      }
+    }
+  };
 
   if (loading || !report) {
     return (
@@ -63,14 +74,21 @@ function ReportPage() {
       {/* Top Header Controls */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <button
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate("/report")}
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 text-xs font-semibold hover:bg-slate-800 transition-all"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Dashboard</span>
+          <span>Back to Reports</span>
         </button>
 
         <div className="flex items-center gap-3">
+          <button
+            onClick={handleDelete}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/20 text-xs font-semibold transition-all"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span>Delete</span>
+          </button>
           <button
             onClick={() => window.print()}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 text-xs font-semibold hover:bg-slate-800 transition-all"
@@ -99,18 +117,20 @@ function ReportPage() {
             <div className="relative w-40 h-40 flex items-center justify-center">
               <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="42" stroke="currentColor" strokeWidth="8" className="text-slate-800" fill="transparent" />
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="42"
-                  stroke="url(#gradient)"
-                  strokeWidth="8"
-                  strokeDasharray="264"
-                  strokeDashoffset={264 - (264 * report.overall_score) / 100}
-                  strokeLinecap="round"
-                  fill="transparent"
-                  className="transition-all duration-1000"
-                />
+                {report.status !== 'Aborted' && (
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="42"
+                    stroke="url(#gradient)"
+                    strokeWidth="8"
+                    strokeDasharray="264"
+                    strokeDashoffset={264 - (264 * report.overall_score) / 100}
+                    strokeLinecap="round"
+                    fill="transparent"
+                    className="transition-all duration-1000"
+                  />
+                )}
                 <defs>
                   <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#6366f1" />
@@ -120,14 +140,14 @@ function ReportPage() {
               </svg>
 
               <div className="absolute flex flex-col items-center">
-                <span className="text-4xl font-black text-white">{report.overall_score}</span>
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">OUT OF 100</span>
+                <span className="text-4xl font-black text-white">{report.status === 'Aborted' ? 'N/A' : report.overall_score}</span>
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">{report.status === 'Aborted' ? 'ABORTED' : 'OUT OF 100'}</span>
               </div>
             </div>
 
             <div className="space-y-1">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-extrabold">
-                <Award className="w-3.5 h-3.5" />
+              <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold ${report.status === 'Aborted' ? 'bg-rose-500/10 border border-rose-500/20 text-rose-400' : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'}`}>
+                {report.status === 'Aborted' ? <AlertCircle className="w-3.5 h-3.5" /> : <Award className="w-3.5 h-3.5" />}
                 <span>{report.hire_recommendation}</span>
               </div>
               <p className="text-xs text-slate-400">Evaluated for {report.role}</p>
@@ -136,18 +156,30 @@ function ReportPage() {
 
           {/* Sub Metric Grid */}
           <div className="md:col-span-7 grid grid-cols-2 gap-4">
-            {scoreMetrics.map((m, idx) => (
-              <div key={idx} className="bg-slate-950/60 border border-slate-800 rounded-2xl p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-400">{m.label}</span>
-                  <m.icon className={`w-4 h-4 ${m.color}`} />
+            {scoreMetrics.map((m, idx) => {
+              const displayScore = Math.max(0, m.score);
+              const isZeroEyeContact = displayScore === 0 && m.label.includes("Eye Contact");
+              return (
+                <div key={idx} className={`bg-slate-950/60 border ${isZeroEyeContact ? 'border-rose-500/30' : 'border-slate-800'} rounded-2xl p-4 space-y-2 relative overflow-hidden`}>
+                  {isZeroEyeContact && <div className="absolute top-0 right-0 w-16 h-16 bg-rose-500/10 blur-xl pointer-events-none" />}
+                  <div className="flex items-center justify-between relative z-10">
+                    <span className="text-xs font-semibold text-slate-400">{m.label}</span>
+                    <m.icon className={`w-4 h-4 ${isZeroEyeContact ? 'text-rose-400' : m.color}`} />
+                  </div>
+                  <div className="flex items-end gap-2 relative z-10">
+                    <div className={`text-2xl font-extrabold ${isZeroEyeContact ? 'text-rose-400' : 'text-white'}`}>{displayScore}%</div>
+                    {isZeroEyeContact && (
+                      <span className="text-[10px] font-bold text-rose-400 uppercase tracking-wider mb-1">
+                        (No Face Detected)
+                      </span>
+                    )}
+                  </div>
+                  <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden relative z-10">
+                    <div className={`h-full rounded-full ${isZeroEyeContact ? 'bg-rose-400' : m.color.replace('text-', 'bg-')}`} style={{ width: `${displayScore}%` }} />
+                  </div>
                 </div>
-                <div className="text-2xl font-extrabold text-white">{m.score}%</div>
-                <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                  <div className={`h-full rounded-full ${m.color.replace('text-', 'bg-')}`} style={{ width: `${m.score}%` }} />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
         </div>
@@ -219,26 +251,55 @@ function ReportPage() {
                 </button>
 
                 {isOpen && (
-                  <div className="p-5 pt-0 border-t border-slate-800/60 space-y-4 bg-slate-950/40 animate-in fade-in duration-150">
+                  <div className="p-5 pt-0 border-t border-slate-800/60 space-y-5 bg-slate-950/40 animate-in fade-in duration-150">
+                    
+                    {/* Per-Question Metrics */}
+                    {item.metrics && (
+                      <div className="grid grid-cols-2 gap-4 pb-4 border-b border-slate-800/60">
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><Target className="w-3.5 h-3.5 text-emerald-400" /> Technical Accuracy</span>
+                            <span className="text-xs font-extrabold text-white">{item.metrics.technical_accuracy}%</span>
+                          </div>
+                          <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                            <div className="h-full rounded-full bg-emerald-400" style={{ width: `${item.metrics.technical_accuracy}%` }} />
+                          </div>
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><MessageSquare className="w-3.5 h-3.5 text-purple-400" /> Communication</span>
+                            <span className="text-xs font-extrabold text-white">{item.metrics.communication_delivery}%</span>
+                          </div>
+                          <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                            <div className="h-full rounded-full bg-purple-400" style={{ width: `${item.metrics.communication_delivery}%` }} />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <div>
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Your Response Transcript</span>
-                      <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-200 leading-relaxed italic">
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Your Response Transcript</span>
+                      <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 leading-relaxed italic relative">
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-slate-700 rounded-l-xl"></div>
                         "{item.answer}"
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div>
-                        <span className="text-[11px] font-bold text-indigo-400 uppercase tracking-wider block mb-1">AI Evaluator Feedback</span>
-                        <div className="p-4 rounded-xl bg-indigo-950/30 border border-indigo-500/20 text-xs text-indigo-200 leading-relaxed">
+                        <span className="text-[11px] font-bold text-indigo-400 uppercase tracking-wider block mb-2">AI Evaluator Feedback</span>
+                        <div className="p-4 rounded-xl bg-indigo-950/30 border border-indigo-500/20 text-xs text-indigo-200 leading-relaxed shadow-sm">
                           {item.feedback}
                         </div>
                       </div>
 
-                      <div>
-                        <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider block mb-1">Ideal Model Response Strategy</span>
-                        <div className="p-4 rounded-xl bg-emerald-950/30 border border-emerald-500/20 text-xs text-emerald-200 leading-relaxed">
-                          {item.ideal_answer}
+                      <div className="relative">
+                        <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                          <Sparkles className="w-3.5 h-3.5" /> Accurate Ideal Answer
+                        </span>
+                        <div className="p-4.5 rounded-xl bg-gradient-to-br from-amber-950/40 to-amber-900/10 border border-amber-500/30 text-xs text-amber-200 leading-relaxed shadow-md shadow-amber-500/5 relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-16 h-16 bg-amber-500/10 rounded-full blur-xl pointer-events-none" />
+                          <p className="relative z-10 font-medium">{item.ideal_answer}</p>
                         </div>
                       </div>
                     </div>
@@ -254,4 +315,4 @@ function ReportPage() {
   );
 }
 
-export default ReportPage;
+export default ReportDetailPage;

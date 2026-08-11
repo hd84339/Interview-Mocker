@@ -28,7 +28,7 @@ function DashboardPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       <DashboardHero user={user} />
-      <DashboardStats />
+      <DashboardStats interviews={recentInterviews} />
       
       {/* Main Content Split: Recent Interviews + Skill Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

@@ -69,7 +69,7 @@ export default function RecentInterviews({ loading, recentInterviews }) {
                     </div>
                   </div>
                   <Link
-                    to={`/report`}
+                    to={`/report/${session.id}`}
                     className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-indigo-600 hover:text-white text-slate-300 text-xs font-semibold transition-all"
                   >
                     Report
