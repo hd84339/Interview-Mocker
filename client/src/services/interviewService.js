@@ -1,6 +1,6 @@
 import { apiClient } from "./apiClient";
 
-export let mockInterviewsList = [
+const defaultMockInterviews = [
   {
     id: "int_101",
     role: "Senior Full Stack Engineer",
@@ -46,6 +46,19 @@ export let mockInterviewsList = [
     questions_count: 5,
   },
 ];
+
+const loadMockInterviews = () => {
+  try {
+    const stored = localStorage.getItem("mock_interviews_list");
+    if (stored) return JSON.parse(stored);
+  } catch (e) {
+    console.error("Error reading localStorage", e);
+  }
+  localStorage.setItem("mock_interviews_list", JSON.stringify(defaultMockInterviews));
+  return defaultMockInterviews;
+};
+
+export let mockInterviewsList = loadMockInterviews();
 
 export const interviewService = {
   async getRecentInterviews() {
@@ -98,17 +111,38 @@ export const interviewService = {
     }
   },
 
-  async submitAnswer(interviewId, questionId, answerText) {
+  async startInterview(interviewId) {
+    try {
+      return await apiClient.post(`/interviews/${interviewId}/start`);
+    } catch {
+      return {
+        started_at: new Date().toISOString(),
+        question: {
+          id: 1,
+          type: "behavioral",
+          text: "Welcome! Can you describe a challenging technical project you built recently?",
+        }
+      };
+    }
+  },
+
+  async submitAnswer(interviewId, questionId, answerText, isCode = false, language = null, forceFinish = false) {
     try {
       return await apiClient.post(`/interviews/${interviewId}/answers`, {
         question_id: questionId,
-        answer_text: answerText,
+        answer: answerText,
+        is_code: isCode,
+        language: language,
+        force_finish: forceFinish
       });
     } catch {
       return {
-        success: true,
-        feedback: "Great structure and clarity in your response!",
-        score: Math.floor(Math.random() * 20) + 80,
+        finished: forceFinish,
+        question: forceFinish ? null : {
+          id: questionId + 1,
+          type: "technical",
+          text: "How do you optimize a web application when performance degrades due to heavy data loading?",
+        }
       };
     }
   },
@@ -208,6 +242,7 @@ export const interviewService = {
     } catch {
       // Mock delete
       mockInterviewsList = mockInterviewsList.filter(r => r.id !== interviewId);
+      localStorage.setItem("mock_interviews_list", JSON.stringify(mockInterviewsList));
       return true;
     }
   },

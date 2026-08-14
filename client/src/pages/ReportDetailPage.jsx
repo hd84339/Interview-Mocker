@@ -278,11 +278,19 @@ function ReportDetailPage() {
                     )}
 
                     <div>
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Your Response Transcript</span>
-                      <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 leading-relaxed italic relative">
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-slate-700 rounded-l-xl"></div>
-                        "{item.answer}"
-                      </div>
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
+                        {item.is_code ? "Your Code Submission" : "Your Response Transcript"}
+                      </span>
+                      {item.is_code ? (
+                        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-xs text-indigo-300 overflow-x-auto shadow-inner font-mono">
+                          <pre><code>{item.answer}</code></pre>
+                        </div>
+                      ) : (
+                        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 leading-relaxed italic relative">
+                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-slate-700 rounded-l-xl"></div>
+                          "{item.answer}"
+                        </div>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

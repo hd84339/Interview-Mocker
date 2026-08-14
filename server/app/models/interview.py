@@ -14,9 +14,11 @@ class Interview(Base):
     experience_level = Column(String, default="Mid-Level")
     difficulty = Column(String, default="Medium")
     resume_id = Column(Integer, ForeignKey("resumes.id"), nullable=True)
+    duration = Column(Integer, default=30)  # Total interview duration in minutes
     status = Column(String, default="pending")  # pending, in_progress, completed
     questions = Column(JSON, nullable=True)  # Store generated questions list
     responses = Column(JSON, nullable=True)  # Store candidate answers
+    started_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     completed_at = Column(DateTime(timezone=True), nullable=True)
 

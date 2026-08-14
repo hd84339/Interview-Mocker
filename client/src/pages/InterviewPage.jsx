@@ -4,14 +4,20 @@ import { interviewService } from "../services/interviewService";
 import InterviewHeader from "../components/interview/InterviewHeader";
 import AIInterviewer from "../components/interview/AIInterviewer";
 import CandidateStudio from "../components/interview/CandidateStudio";
+import CodeEditorPane from "../components/interview/CodeEditorPane";
 
 function InterviewPage() {
   const navigate = useNavigate();
   
   // Session data state
   const [session, setSession] = useState(null);
-  const [currentQIndex, setCurrentQIndex] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [questionCount, setQuestionCount] = useState(1);
   const [userAnswer, setUserAnswer] = useState("");
+  
+  // Coding state
+  const [code, setCode] = useState("");
+  const [language, setLanguage] = useState("javascript");
   
   // Controls & Hardware
   const [isRecording, setIsRecording] = useState(false);
@@ -19,9 +25,10 @@ function InterviewPage() {
   const [micActive, setMicActive] = useState(true);
   const [aiSpeaking, setAiSpeaking] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [initializing, setInitializing] = useState(true);
 
   // Stats & Timers
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [eyeContactScore, setEyeContactScore] = useState(88);
 
   const videoRef = useRef(null);
@@ -29,43 +36,66 @@ function InterviewPage() {
 
   // Load session from Storage or create default
   useEffect(() => {
-    const stored = sessionStorage.getItem("active_interview_session");
-    if (stored) {
-      setSession(JSON.parse(stored));
-    } else {
-      // Default session
-      interviewService.createInterview({ role: "Senior Full Stack Engineer" }).then((s) => {
+    async function init() {
+      try {
+        const stored = sessionStorage.getItem("active_interview_session");
+        let s = stored ? JSON.parse(stored) : null;
+        if (!s) {
+          s = await interviewService.createInterview({ role: "Senior Full Stack Engineer", duration: 30 });
+        }
         setSession(s);
-      });
+        let dur = parseInt(s.duration, 10);
+        if (isNaN(dur)) dur = 30; // fallback if missing
+        setRemainingSeconds(dur * 60);
+
+        // Start session to get first question
+        const startRes = await interviewService.startInterview(s.id);
+        if (startRes.question) {
+          setCurrentQuestion(startRes.question);
+          speakQuestionText(startRes.question.text || startRes.question.question);
+        }
+      } catch (err) {
+        console.error("Failed to start interview", err);
+      } finally {
+        setInitializing(false);
+      }
     }
+    init();
   }, []);
 
   // Timer effect
   useEffect(() => {
+    if (initializing || !session) return;
+    
     const timer = setInterval(() => {
-      setElapsedSeconds((prev) => prev + 1);
+      setRemainingSeconds((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          handleTimeUp();
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [initializing, session]);
 
   // Eye Contact Simulation effect
   useEffect(() => {
     if (!cameraActive) return;
     const interval = setInterval(() => {
       setEyeContactScore((prev) => {
-        // Fluctuate the score randomly by a small amount, keeping it between 70 and 99
-        const change = Math.floor(Math.random() * 7) - 3; // -3 to +3
+        const change = Math.floor(Math.random() * 7) - 3;
         const next = prev + change;
         return Math.min(99, Math.max(70, next));
       });
-    }, 2000); // update every 2 seconds
+    }, 2000);
     return () => clearInterval(interval);
   }, [cameraActive]);
 
-  // WebCam Video Stream Simulation / WebCam request
+  // WebCam Video Stream Simulation
   useEffect(() => {
     let currentStream = null;
-
     if (cameraActive) {
       navigator.mediaDevices?.getUserMedia({ video: true, audio: true })
         .then((stream) => {
@@ -74,25 +104,15 @@ function InterviewPage() {
             videoRef.current.srcObject = stream;
           }
         })
-        .catch(() => {
-          // Camera permission refused or unavailable
-        });
+        .catch(() => {});
     } else {
       if (videoRef.current && videoRef.current.srcObject) {
         const tracks = videoRef.current.srcObject.getTracks();
         tracks.forEach((track) => track.stop());
       }
     }
-
-    // Cleanup function: runs on unmount or when cameraActive changes
     return () => {
-      if (currentStream) {
-        currentStream.getTracks().forEach(track => track.stop());
-      }
-      if (videoRef.current && videoRef.current.srcObject) {
-        const tracks = videoRef.current.srcObject.getTracks();
-        tracks.forEach((track) => track.stop());
-      }
+      if (currentStream) currentStream.getTracks().forEach(track => track.stop());
     };
   }, [cameraActive]);
 
@@ -136,16 +156,13 @@ function InterviewPage() {
   // Cleanup speech recognition on unmount
   useEffect(() => {
     return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
+      if (recognitionRef.current) recognitionRef.current.stop();
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     };
   }, []);
 
   const speakQuestionText = (text) => {
+    if (!text) return;
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
@@ -156,76 +173,158 @@ function InterviewPage() {
     }
   };
 
-  const handleNextQuestion = async () => {
-    if (!userAnswer.trim()) return;
+  const handleTimeUp = async () => {
     setSubmitting(true);
+    const isCode = currentQuestion?.type === "coding";
+    const answerToSubmit = isCode ? code : userAnswer;
+    
+    await interviewService.submitAnswer(
+      session.id, 
+      currentQuestion?.id, 
+      answerToSubmit || "Time expired",
+      isCode,
+      language,
+      true // force finish
+    );
+    navigate("/report");
+  };
 
-    const question = session.questions[currentQIndex];
-    await interviewService.submitAnswer(session.id, question.id, userAnswer);
+  const handleNextQuestion = async () => {
+    const isCode = currentQuestion?.type === "coding";
+    if (!isCode && !userAnswer.trim()) return;
+    if (isCode && !code.trim()) return;
+    
+    setSubmitting(true);
+    const answerToSubmit = isCode ? code : userAnswer;
+
+    const res = await interviewService.submitAnswer(
+      session.id, 
+      currentQuestion.id, 
+      answerToSubmit,
+      isCode,
+      language
+    );
 
     setUserAnswer("");
+    setCode("");
     setSubmitting(false);
 
-    if (currentQIndex + 1 < session.questions.length) {
-      const nextIdx = currentQIndex + 1;
-      setCurrentQIndex(nextIdx);
-      speakQuestionText(session.questions[nextIdx].text);
-    } else {
-      // Finished all questions!
+    if (res.finished || remainingSeconds <= 0) {
       navigate("/report");
+    } else if (res.question) {
+      setQuestionCount(prev => prev + 1);
+      setCurrentQuestion(res.question);
+      speakQuestionText(res.question.text || res.question.question);
     }
   };
 
-  const formatTime = (totalSeconds) => {
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  if (!session || !session.questions) {
+  if (initializing || !session || !currentQuestion) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center space-y-3">
           <div className="w-10 h-10 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm font-semibold text-slate-300">Initializing Live AI Interview Studio...</p>
+          <p className="text-sm font-semibold text-slate-300">
+            {initializing ? "Initializing Live AI Interview Studio..." : "AI is generating your first question..."}
+          </p>
         </div>
       </div>
     );
   }
 
-  const currentQuestion = session.questions[currentQIndex];
+  const isCoding = currentQuestion?.type === "coding";
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="space-y-6 animate-in fade-in duration-300 h-full flex flex-col">
       <InterviewHeader
         session={session}
-        currentQIndex={currentQIndex}
-        elapsedSeconds={elapsedSeconds}
+        questionCount={questionCount}
+        remainingSeconds={remainingSeconds}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <AIInterviewer
-          currentQuestion={currentQuestion}
-          currentQIndex={currentQIndex}
-          totalQuestions={session.questions.length}
-          aiSpeaking={aiSpeaking}
-          speakQuestionText={speakQuestionText}
-        />
+      <div className="flex flex-col gap-6 flex-1">
+        {/* Main Video & Code Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* AI Interviewer */}
+          <div className={isCoding ? 'lg:col-span-3' : 'lg:col-span-6'}>
+            <AIInterviewer
+              currentQuestion={currentQuestion}
+              currentQIndex={questionCount - 1} // just for UI display
+              totalQuestions={"∞"} // dynamic
+              aiSpeaking={aiSpeaking}
+              speakQuestionText={speakQuestionText}
+              compact={isCoding}
+            />
+            {isCoding && (
+              <div className="mt-6">
+                <CandidateStudio
+                  videoRef={videoRef}
+                  cameraActive={cameraActive}
+                  setCameraActive={setCameraActive}
+                  micActive={micActive}
+                  setMicActive={setMicActive}
+                  eyeContactScore={eyeContactScore}
+                  hideTextarea={true}
+                />
+              </div>
+            )}
+          </div>
 
-        <CandidateStudio
-          videoRef={videoRef}
-          cameraActive={cameraActive}
-          setCameraActive={setCameraActive}
-          micActive={micActive}
-          setMicActive={setMicActive}
-          eyeContactScore={eyeContactScore}
-          userAnswer={userAnswer}
-          setUserAnswer={setUserAnswer}
-          isRecording={isRecording}
-          toggleSpeechRecognition={toggleSpeechRecognition}
-          submitting={submitting}
-          handleNextQuestion={handleNextQuestion}
-        />
+          {/* Candidate Camera (When not coding) */}
+          {!isCoding && (
+            <div className="lg:col-span-6">
+              <CandidateStudio
+                videoRef={videoRef}
+                cameraActive={cameraActive}
+                setCameraActive={setCameraActive}
+                micActive={micActive}
+                setMicActive={setMicActive}
+                eyeContactScore={eyeContactScore}
+                hideTextarea={true}
+              />
+            </div>
+          )}
+
+          {/* Code Editor (When coding) */}
+          {isCoding && (
+            <div className="lg:col-span-9 h-full min-h-[500px]">
+              <CodeEditorPane
+                code={code}
+                setCode={setCode}
+                language={language}
+                setLanguage={setLanguage}
+              />
+              <div className="mt-4 flex justify-end">
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={handleNextQuestion}
+                  className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold text-sm shadow-xl shadow-indigo-600/25 transition-all hover:scale-105 active:scale-95 disabled:opacity-40"
+                >
+                  {submitting ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <span>Submit Code & Next Question</span>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Answer Area (When not coding) */}
+        {!isCoding && (
+          <div className="w-full">
+            <CandidateStudio
+              hideCamera={true}
+              userAnswer={userAnswer}
+              setUserAnswer={setUserAnswer}
+              isRecording={isRecording}
+              toggleSpeechRecognition={toggleSpeechRecognition}
+              submitting={submitting}
+              handleNextQuestion={handleNextQuestion}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ class InterviewCreate(BaseModel):
     experience_level: str = "Mid-Level"
     difficulty: str = "Medium"  # Easy, Medium, Hard, FAANG
     resume_id: Optional[int] = None
+    duration: int = 30  # Duration in minutes
 
 
 class InterviewResponse(BaseModel):
@@ -21,12 +22,15 @@ class InterviewResponse(BaseModel):
     experience_level: str
     difficulty: Optional[str] = None
     resume_id: Optional[int] = None
+    duration: int
     status: str
     questions: Optional[List[Dict[str, Any]]] = None
+    started_at: Optional[datetime] = None
     created_at: datetime
 
     class Config:
         from_attributes = True
+
 
 
 

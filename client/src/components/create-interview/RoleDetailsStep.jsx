@@ -7,8 +7,8 @@ export default function RoleDetailsStep({
   setLevel,
   type,
   setType,
-  questionCount,
-  setQuestionCount,
+  duration,
+  setDuration,
   onNext,
 }) {
   return (
@@ -73,20 +73,23 @@ export default function RoleDetailsStep({
 
       <div>
         <label className="block text-xs font-semibold text-slate-300 mb-2">
-          Number of Questions ({questionCount})
+          Interview Duration
         </label>
-        <input
-          type="range"
-          min="3"
-          max="10"
-          value={questionCount}
-          onChange={(e) => setQuestionCount(Number(e.target.value))}
-          className="w-full accent-indigo-500"
-        />
-        <div className="flex justify-between text-[11px] text-slate-500 font-semibold mt-1">
-          <span>3 Questions (Quick Practice)</span>
-          <span>5 Questions (Standard)</span>
-          <span>10 Questions (Full Mock)</span>
+        <div className="grid grid-cols-4 gap-2">
+          {[15, 30, 45, 60].map((mins) => (
+            <button
+              key={mins}
+              type="button"
+              onClick={() => setDuration(mins)}
+              className={`py-2 rounded-xl text-xs font-bold border transition-all ${
+                duration === mins
+                  ? "bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/20"
+                  : "bg-slate-950/60 text-slate-400 border-slate-800 hover:text-slate-200"
+              }`}
+            >
+              {mins} mins
+            </button>
+          ))}
         </div>
       </div>
 

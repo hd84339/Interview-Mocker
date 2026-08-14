@@ -22,7 +22,7 @@ class FlexibleInterviewCreate(BaseModel):
     level: str = ""
     difficulty: str = "Medium"
     type: str = "Technical"
-    questionCount: int = 5
+    duration: int = 30
     resume_id: Union[int, None] = None
 
 
@@ -38,6 +38,7 @@ async def create_interview(
         company_name=interview_in.company_name,
         experience_level=interview_in.level or interview_in.experience_level,
         difficulty=interview_in.difficulty,
+        duration=interview_in.duration,
         resume_id=interview_in.resume_id
     )
     return await interview_service.create_interview(db, user_id=current_user.id, interview_in=final_in)
@@ -67,10 +68,28 @@ def get_interview(
         raise HTTPException(status_code=404, detail="Interview not found")
     return interview
 
+@router.post("/{interview_id}/start")
+async def start_interview(
+    interview_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        int_id = int(interview_id.replace("int_", ""))
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Interview not found")
+    
+    interview = interview_service.get_interview(db, interview_id=int_id)
+    if not interview or interview.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Interview not found")
+        
+    res = await interview_service.start_interview(db, int_id)
+    return res
+
 
 @router.post("/{interview_id}/answers")
 @router.post("/{interview_id}/answer")
-def submit_answer(
+async def submit_answer(
     interview_id: str,
     body: Dict[str, Any],
     db: Session = Depends(get_db),
@@ -83,14 +102,7 @@ def submit_answer(
 
     interview = interview_service.get_interview(db, interview_id=int_id)
     if not interview or interview.user_id != current_user.id:
-        # Return success confirmation even for temporary session IDs
         return {"message": "Answer recorded successfully", "status": "recorded"}
 
-    responses = list(interview.responses or [])
-    responses.append({
-        "question_id": body.get("question_id"),
-        "answer": body.get("answer") or body.get("answer_text", "")
-    })
-    interview.responses = responses
-    db.commit()
-    return {"message": "Answer recorded successfully"}
+    res = await interview_service.process_answer(db, int_id, body)
+    return res

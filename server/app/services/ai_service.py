@@ -13,45 +13,64 @@ class AIService:
     def __init__(self):
         self.api_key = settings.GEMINI_API_KEY
 
-    async def generate_interview_questions(
+    async def generate_next_question(
         self,
+        history: List[Dict[str, Any]],
         role_title: str,
         experience_level: str = "Mid-Level",
         company_name: str = "Tech Company",
         difficulty: str = "Medium",
         job_description: str = "General software engineering responsibilities",
-        resume_context: str = "N/A"
-    ) -> List[Dict[str, Any]]:
-        prompt = INTERVIEW_GENERATION_PROMPT.format(
-            num_questions=5,
-            role_title=role_title,
-            company_name=company_name,
-            experience_level=experience_level,
-            difficulty=difficulty,
-            job_description=job_description or "General software engineering requirements.",
-            resume_context=resume_context or "N/A"
-        )
-        # Fallback / Default generated response structure
-        return [
-            {
-                "id": 1,
-                "type": "technical",
-                "question": f"At {company_name}, how would you approach building scalable endpoints for a {role_title} role at {difficulty} difficulty?",
-                "evaluation_criteria": "Clear understanding of architecture, API optimization, and error handling."
-            },
-            {
-                "id": 2,
-                "type": "system_design",
-                "question": f"Given the requirements in '{role_title}', design a high-throughput caching and database strategy.",
-                "evaluation_criteria": "Evaluates data partitioning, latency trade-offs, and cache invalidation policies."
-            },
-            {
-                "id": 3,
-                "type": "behavioral",
-                "question": f"Tell me about a complex project from your experience that aligns with this {company_name} position.",
-                "evaluation_criteria": "Demonstrates leadership, structured problem solving, and impactful delivery."
-            }
-        ]
+        resume_context: str = "N/A",
+        remaining_time_minutes: int = 30
+    ) -> Dict[str, Any]:
+        """
+        Dynamically generates the next question based on the history and remaining time.
+        """
+        # In a real implementation, you would pass history and context to the LLM.
+        # This is a mocked dynamic generation based on history length.
+        question_count = len(history)
+        next_id = question_count + 1
+        
+        # Decide question type based on history
+        if question_count == 0:
+            q_type = "behavioral"
+            question = f"Welcome to the interview for {role_title} at {company_name}. Can you start by walking me through your background and how it aligns with this role?"
+        elif question_count == 1:
+            q_type = "technical"
+            question = f"Based on your resume, I see some relevant experience. Can you explain how you would design a scalable backend service for {company_name}?"
+        elif question_count == 2:
+            q_type = "coding"
+            question = "Let's do a quick coding exercise. Write a function to find the first non-repeating character in a string."
+        elif question_count == 3:
+            q_type = "system_design"
+            question = "Great. Now, how would you scale that application to handle 10,000 requests per second?"
+        else:
+            q_type = "technical"
+            question = f"Let's dive deeper into {difficulty} concepts. How do you handle database transaction isolation levels?"
+            
+        return {
+            "id": next_id,
+            "type": q_type,
+            "text": question,  # Frontend uses text for speech usually, or question
+            "question": question,
+            "evaluation_criteria": "Evaluates candidate adaptability and technical depth.",
+            "language_options": ["python", "javascript", "cpp", "java"] if q_type == "coding" else []
+        }
+
+    async def evaluate_code_submission(self, question: str, code: str, language: str) -> Dict[str, Any]:
+        """
+        AI evaluates candidate's code submission.
+        """
+        # Mocked AI evaluation
+        is_correct = "return" in code and len(code) > 10
+        return {
+            "correctness": 90 if is_correct else 40,
+            "time_complexity": "O(n)",
+            "space_complexity": "O(n)",
+            "feedback": "Good logic. Consider handling edge cases like empty strings." if is_correct else "Syntax is incomplete or missing core logic."
+        }
+
 
 
     async def generate_feedback_report(

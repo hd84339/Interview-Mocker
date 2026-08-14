@@ -14,7 +14,7 @@ function CreateInterviewPage() {
   const [role, setRole] = useState("Senior Full Stack Engineer");
   const [level, setLevel] = useState("Senior");
   const [type, setType] = useState("Technical & Architecture");
-  const [questionCount, setQuestionCount] = useState(5);
+  const [duration, setDuration] = useState(30);
   
   // Resume File State
   const [resumeFile, setResumeFile] = useState(null);
@@ -80,7 +80,7 @@ function CreateInterviewPage() {
         role,
         level,
         type,
-        questionCount,
+        duration,
         enableVoice,
         enableCamera,
         resumeId: resumeData?.id,
@@ -152,8 +152,8 @@ function CreateInterviewPage() {
             setLevel={setLevel}
             type={type}
             setType={setType}
-            questionCount={questionCount}
-            setQuestionCount={setQuestionCount}
+            duration={duration}
+            setDuration={setDuration}
             onNext={() => setStep(2)}
           />
         )}
