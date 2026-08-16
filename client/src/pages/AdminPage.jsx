@@ -13,11 +13,11 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (user && !user.is_admin && user.email !== import.meta.env.VITE_ADMIN_EMAIL && user.email !== "hd84339@gmail.com") {
-      // Basic client-side guard if is_admin is not loaded yet
-      // backend will reject it anyway
+      navigate("/dashboard");
+      return;
     }
     fetchUsers();
-  }, [user]);
+  }, [user, navigate]);
 
   const fetchUsers = async () => {
     try {

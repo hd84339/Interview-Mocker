@@ -45,6 +45,14 @@ class ApiClient {
       const response = await fetch(url, config);
 
       if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem(STORAGE_KEYS.TOKEN);
+          localStorage.removeItem(STORAGE_KEYS.USER);
+          localStorage.removeItem("mockhora_user");
+          localStorage.removeItem("token");
+          window.dispatchEvent(new Event("auth-expired"));
+        }
+
         let errorMessage = `HTTP Error ${response.status}`;
         try {
           const errorData = await response.json();
