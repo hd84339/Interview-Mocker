@@ -29,6 +29,7 @@ function InterviewPage() {
 
   // Stats & Timers
   const [remainingSeconds, setRemainingSeconds] = useState(0);
+  const [questionSeconds, setQuestionSeconds] = useState(120);
   const [eyeContactScore, setEyeContactScore] = useState(88);
 
   const videoRef = useRef(null);
@@ -53,6 +54,8 @@ function InterviewPage() {
         if (startRes.question) {
           setCurrentQuestion(startRes.question);
           speakQuestionText(startRes.question.text || startRes.question.question);
+          const qt = startRes.question.type;
+          setQuestionSeconds(qt === "coding" || qt === "system_design" ? 180 : 120);
         }
       } catch (err) {
         console.error("Failed to start interview", err);
@@ -65,20 +68,27 @@ function InterviewPage() {
 
   // Timer effect
   useEffect(() => {
-    if (initializing || !session) return;
+    if (initializing || !session || submitting) return;
     
     const timer = setInterval(() => {
       setRemainingSeconds((prev) => {
         if (prev <= 1) {
-          clearInterval(timer);
           handleTimeUp();
+          return 0;
+        }
+        return prev - 1;
+      });
+
+      setQuestionSeconds((prev) => {
+        if (prev <= 1) {
+          handleNextQuestion(true);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [initializing, session]);
+  }, [initializing, session, submitting, currentQuestion]);
 
   // Eye Contact Simulation effect
   useEffect(() => {
@@ -189,13 +199,18 @@ function InterviewPage() {
     navigate("/report");
   };
 
-  const handleNextQuestion = async () => {
+  const handleNextQuestion = async (isTimeout = false) => {
     const isCode = currentQuestion?.type === "coding";
-    if (!isCode && !userAnswer.trim()) return;
-    if (isCode && !code.trim()) return;
+    if (!isTimeout) {
+      if (!isCode && !userAnswer.trim()) return;
+      if (isCode && !code.trim()) return;
+    }
     
     setSubmitting(true);
-    const answerToSubmit = isCode ? code : userAnswer;
+    let answerToSubmit = isCode ? code : userAnswer;
+    if (isTimeout && !answerToSubmit.trim()) {
+      answerToSubmit = "Time expired";
+    }
 
     const res = await interviewService.submitAnswer(
       session.id, 
@@ -207,14 +222,19 @@ function InterviewPage() {
 
     setUserAnswer("");
     setCode("");
-    setSubmitting(false);
 
     if (res.finished || remainingSeconds <= 0) {
+      setSubmitting(false);
       navigate("/report");
     } else if (res.question) {
       setQuestionCount(prev => prev + 1);
       setCurrentQuestion(res.question);
+      const qt = res.question.type;
+      setQuestionSeconds(qt === "coding" || qt === "system_design" ? 180 : 120);
       speakQuestionText(res.question.text || res.question.question);
+      setSubmitting(false);
+    } else {
+      setSubmitting(false);
     }
   };
 
@@ -239,11 +259,12 @@ function InterviewPage() {
         session={session}
         questionCount={questionCount}
         remainingSeconds={remainingSeconds}
+        questionSeconds={questionSeconds}
       />
 
-      <div className="flex flex-col gap-6 flex-1">
+      <div className="flex flex-col gap-6 flex-1 h-full min-h-0">
         {/* Main Video & Code Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full min-h-0">
           {/* AI Interviewer */}
           <div className={isCoding ? 'lg:col-span-3' : 'lg:col-span-6'}>
             <AIInterviewer
@@ -269,18 +290,35 @@ function InterviewPage() {
             )}
           </div>
 
-          {/* Candidate Camera (When not coding) */}
+          {/* Candidate Camera & Answer Area (When not coding) */}
           {!isCoding && (
-            <div className="lg:col-span-6">
-              <CandidateStudio
-                videoRef={videoRef}
-                cameraActive={cameraActive}
-                setCameraActive={setCameraActive}
-                micActive={micActive}
-                setMicActive={setMicActive}
-                eyeContactScore={eyeContactScore}
-                hideTextarea={true}
-              />
+            <div className="lg:col-span-6 flex flex-col gap-6 h-full">
+              {/* Answer Input Top */}
+              <div className="flex-1">
+                <CandidateStudio
+                  hideCamera={true}
+                  userAnswer={userAnswer}
+                  setUserAnswer={setUserAnswer}
+                  isRecording={isRecording}
+                  toggleSpeechRecognition={toggleSpeechRecognition}
+                  submitting={submitting}
+                  handleNextQuestion={() => handleNextQuestion(false)}
+                />
+              </div>
+
+              {/* Camera Below */}
+              <div className="mt-auto">
+                <CandidateStudio
+                  videoRef={videoRef}
+                  cameraActive={cameraActive}
+                  setCameraActive={setCameraActive}
+                  micActive={micActive}
+                  setMicActive={setMicActive}
+                  eyeContactScore={eyeContactScore}
+                  hideTextarea={true}
+                  hideSubmit={true}
+                />
+              </div>
             </div>
           )}
 
@@ -297,7 +335,7 @@ function InterviewPage() {
                 <button
                   type="button"
                   disabled={submitting}
-                  onClick={handleNextQuestion}
+                  onClick={() => handleNextQuestion(false)}
                   className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold text-sm shadow-xl shadow-indigo-600/25 transition-all hover:scale-105 active:scale-95 disabled:opacity-40"
                 >
                   {submitting ? (
@@ -310,21 +348,6 @@ function InterviewPage() {
             </div>
           )}
         </div>
-
-        {/* Answer Area (When not coding) */}
-        {!isCoding && (
-          <div className="w-full">
-            <CandidateStudio
-              hideCamera={true}
-              userAnswer={userAnswer}
-              setUserAnswer={setUserAnswer}
-              isRecording={isRecording}
-              toggleSpeechRecognition={toggleSpeechRecognition}
-              submitting={submitting}
-              handleNextQuestion={handleNextQuestion}
-            />
-          </div>
-        )}
       </div>
     </div>
   );

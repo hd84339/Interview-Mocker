@@ -1,6 +1,7 @@
 import json
 import logging
 from typing import Dict, Any, List
+import google.generativeai as genai
 from app.config.settings import settings
 from app.prompts.interview_prompt import INTERVIEW_GENERATION_PROMPT
 from app.prompts.feedback_prompt import FEEDBACK_GENERATION_PROMPT
@@ -12,6 +13,8 @@ logger = logging.getLogger(__name__)
 class AIService:
     def __init__(self):
         self.api_key = settings.GEMINI_API_KEY
+        if self.api_key:
+            genai.configure(api_key=self.api_key)
 
     async def generate_next_question(
         self,
@@ -27,8 +30,7 @@ class AIService:
         """
         Dynamically generates the next question based on the history and remaining time.
         """
-        # In a real implementation, you would pass history and context to the LLM.
-        # This is a mocked dynamic generation based on history length.
+        # Mocked dynamic generation based on history length for now.
         question_count = len(history)
         next_id = question_count + 1
         
@@ -52,7 +54,7 @@ class AIService:
         return {
             "id": next_id,
             "type": q_type,
-            "text": question,  # Frontend uses text for speech usually, or question
+            "text": question,
             "question": question,
             "evaluation_criteria": "Evaluates candidate adaptability and technical depth.",
             "language_options": ["python", "javascript", "cpp", "java"] if q_type == "coding" else []
@@ -62,7 +64,6 @@ class AIService:
         """
         AI evaluates candidate's code submission.
         """
-        # Mocked AI evaluation
         is_correct = "return" in code and len(code) > 10
         return {
             "correctness": 90 if is_correct else 40,
@@ -80,19 +81,37 @@ class AIService:
             role_title=role_title,
             questions_and_responses=questions_and_responses
         )
+        
+        if not self.api_key:
+            logger.warning("No GEMINI_API_KEY found, using mock feedback.")
+            return self._mock_feedback_fallback()
+
+        try:
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            response = model.generate_content(prompt)
+            text = response.text.strip()
+            
+            # Remove markdown JSON wrappers if present
+            if text.startswith("```json"):
+                text = text[7:]
+            if text.startswith("```"):
+                text = text[3:]
+            if text.endswith("```"):
+                text = text[:-3]
+                
+            return json.loads(text.strip())
+        except Exception as e:
+            logger.error(f"Failed to generate AI feedback: {e}")
+            return self._mock_feedback_fallback()
+
+    def _mock_feedback_fallback(self) -> Dict[str, Any]:
         return {
-            "overall_score": 88.5,
-            "technical_accuracy": 90.0,
-            "communication_score": 87.0,
-            "strengths": [
-                "Strong technical clarity on system architectural patterns.",
-                "Structured behavioral answers following STAR framework."
-            ],
-            "improvements": [
-                "Include concrete trade-offs when choosing database storage engines.",
-                "Maintain consistent eye contact and reduce filler pauses."
-            ],
-            "detailed_feedback": "The candidate performed very well overall, demonstrating solid technical fundamentals and clear communication."
+            "overall_score": 0,
+            "technical_accuracy": 0,
+            "communication_score": 0,
+            "strengths": ["None identified"],
+            "improvements": ["Complete the interview.", "Provide valid answers to questions."],
+            "detailed_feedback": "The interview could not be properly evaluated or was incomplete."
         }
 
     async def parse_resume_text(self, resume_text: str) -> Dict[str, Any]:

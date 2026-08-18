@@ -1,16 +1,18 @@
-import { Clock, Square } from "lucide-react";
+import { Clock, Square, Timer } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export default function InterviewHeader({ session, questionCount, remainingSeconds }) {
+export default function InterviewHeader({ session, questionCount, remainingSeconds, questionSeconds }) {
   const navigate = useNavigate();
 
   const formatTime = (totalSeconds) => {
+    if (totalSeconds === undefined || totalSeconds === null) return "--:--";
     const mins = Math.floor(Math.max(0, totalSeconds) / 60);
     const secs = Math.floor(Math.max(0, totalSeconds) % 60);
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   const isLowTime = remainingSeconds < 300; // < 5 mins
+  const isQuestionLowTime = questionSeconds < 30; // < 30 secs
 
   return (
     <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:px-6 flex flex-wrap items-center justify-between gap-4 backdrop-blur-xl shadow-xl">
@@ -22,11 +24,20 @@ export default function InterviewHeader({ session, questionCount, remainingSecon
         </div>
       </div>
 
-      {/* Timer & Finish Session CTA */}
+      {/* Timers & Finish Session CTA */}
       <div className="flex items-center gap-4">
+        {/* Question Timer */}
+        {questionSeconds !== undefined && (
+          <div className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl border text-xs font-mono font-bold ${isQuestionLowTime ? 'bg-amber-950/80 border-amber-800 text-amber-300 animate-pulse' : 'bg-slate-800/80 border-slate-700 text-slate-300'}`}>
+            <Timer className={`w-4 h-4 ${isQuestionLowTime ? 'text-amber-400' : 'text-slate-400'}`} />
+            <span>Q-Time: {formatTime(questionSeconds)}</span>
+          </div>
+        )}
+
+        {/* Global Timer */}
         <div className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl border text-xs font-mono font-bold ${isLowTime ? 'bg-rose-950/80 border-rose-800 text-rose-300 animate-pulse' : 'bg-slate-950/80 border-slate-800 text-indigo-300'}`}>
           <Clock className={`w-4 h-4 ${isLowTime ? 'text-rose-400' : 'text-indigo-400'}`} />
-          <span>{formatTime(remainingSeconds)}</span>
+          <span>Total: {formatTime(remainingSeconds)}</span>
         </div>
 
         <button

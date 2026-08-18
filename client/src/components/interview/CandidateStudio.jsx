@@ -15,6 +15,7 @@ export default function CandidateStudio({
   handleNextQuestion,
   hideTextarea = false,
   hideCamera = false,
+  hideSubmit = false,
 }) {
   return (
     <div className="space-y-6">
@@ -133,7 +134,7 @@ export default function CandidateStudio({
       )}
       
       {/* If hideTextarea is true, just show a submit button below the video */}
-      {hideTextarea && (
+      {hideTextarea && !hideSubmit && (
         <div className="flex justify-end">
           <button
             type="button"
