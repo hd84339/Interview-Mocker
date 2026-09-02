@@ -100,7 +100,7 @@ function MainLayout() {
                     className="flex items-center gap-2.5 p-1.5 rounded-xl hover:bg-slate-800/70 border border-transparent hover:border-slate-700/60 transition-all"
                   >
                     <img
-                      src={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || "User")}`}
+                      src={user.avatar_url || user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.full_name || user.displayName || user.name || "User")}&background=6366f1&color=fff`}
                       alt="User Avatar"
                       className="w-8 h-8 rounded-lg object-cover ring-2 ring-indigo-500/30"
                     />

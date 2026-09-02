@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { AlertTriangle } from "lucide-react";
 import { interviewService } from "../services/interviewService";
 import InterviewHeader from "../components/interview/InterviewHeader";
 import AIInterviewer from "../components/interview/AIInterviewer";
@@ -31,6 +32,7 @@ function InterviewPage() {
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [questionSeconds, setQuestionSeconds] = useState(120);
   const [eyeContactScore, setEyeContactScore] = useState(88);
+  const [showTabSwitchWarning, setShowTabSwitchWarning] = useState(false);
 
   const videoRef = useRef(null);
   const recognitionRef = useRef(null);
@@ -65,6 +67,24 @@ function InterviewPage() {
     }
     init();
   }, []);
+
+  // Tab switch detection
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && !initializing && session && !submitting) {
+        setShowTabSwitchWarning(true);
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [initializing, session, submitting]);
+
+  const handleCancelInterview = () => {
+    navigate("/dashboard");
+  };
 
   // Timer effect
   useEffect(() => {
@@ -255,6 +275,34 @@ function InterviewPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300 h-full flex flex-col">
+      {showTabSwitchWarning && (
+        <div className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-rose-500/30 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6">
+            <div className="flex items-center gap-3 text-rose-400">
+              <AlertTriangle className="w-8 h-8" />
+              <h2 className="text-xl font-bold">Tab Switch Detected</h2>
+            </div>
+            <p className="text-slate-300 text-sm">
+              We noticed you navigated away from the interview tab. During a real interview, this might be flagged.
+            </p>
+            <div className="flex items-center gap-3 pt-4">
+              <button
+                onClick={() => setShowTabSwitchWarning(false)}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold transition-all"
+              >
+                Continue Interview
+              </button>
+              <button
+                onClick={handleCancelInterview}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold transition-all shadow-lg shadow-rose-600/20"
+              >
+                Cancel Interview
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <InterviewHeader
         session={session}
         questionCount={questionCount}
