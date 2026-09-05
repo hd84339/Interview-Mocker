@@ -111,7 +111,8 @@ class AIService:
             "communication_score": 0,
             "strengths": ["None identified"],
             "improvements": ["Complete the interview.", "Provide valid answers to questions."],
-            "detailed_feedback": "The interview could not be properly evaluated or was incomplete."
+            "detailed_feedback": "The interview could not be properly evaluated or was incomplete.",
+            "questions_feedback": []
         }
 
     async def parse_resume_text(self, resume_text: str) -> Dict[str, Any]:

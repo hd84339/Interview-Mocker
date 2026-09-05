@@ -61,11 +61,18 @@ function ReportDetailPage() {
     );
   }
 
+  const scores = report.scores || {
+    technical_accuracy: report.technical_accuracy || 0,
+    structural_clarity: report.structural_clarity || 0,
+    communication_delivery: report.communication_score || 0,
+    eye_contact_confidence: report.eye_contact_confidence || 0
+  };
+
   const scoreMetrics = [
-    { label: "Technical Accuracy", score: report.scores.technical_accuracy, icon: Target, color: "text-emerald-400" },
-    { label: "Structural Clarity", score: report.scores.structural_clarity, icon: TrendingUp, color: "text-indigo-400" },
-    { label: "Communication & Delivery", score: report.scores.communication_delivery, icon: MessageSquare, color: "text-purple-400" },
-    { label: "Eye Contact & Pose", score: report.scores.eye_contact_confidence, icon: Eye, color: "text-amber-400" },
+    { label: "Technical Accuracy", score: scores.technical_accuracy, icon: Target, color: "text-emerald-400" },
+    { label: "Structural Clarity", score: scores.structural_clarity, icon: TrendingUp, color: "text-indigo-400" },
+    { label: "Communication & Delivery", score: scores.communication_delivery, icon: MessageSquare, color: "text-purple-400" },
+    { label: "Eye Contact & Pose", score: scores.eye_contact_confidence, icon: Eye, color: "text-amber-400" },
   ];
 
   return (
@@ -195,7 +202,7 @@ function ReportDetailPage() {
             <span>Key Technical Strengths</span>
           </h2>
           <ul className="space-y-2.5">
-            {report.strengths.map((str, i) => (
+            {(report.strengths || []).map((str, i) => (
               <li key={i} className="flex items-start gap-2.5 text-xs text-slate-300 leading-relaxed bg-slate-950/40 p-3 rounded-xl border border-slate-800/60">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0" />
                 <span>{str}</span>
@@ -211,7 +218,7 @@ function ReportDetailPage() {
             <span>Actionable Growth Areas</span>
           </h2>
           <ul className="space-y-2.5">
-            {report.improvements.map((imp, i) => (
+            {(report.improvements || []).map((imp, i) => (
               <li key={i} className="flex items-start gap-2.5 text-xs text-slate-300 leading-relaxed bg-slate-950/40 p-3 rounded-xl border border-slate-800/60">
                 <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
                 <span>{imp}</span>
@@ -230,7 +237,7 @@ function ReportDetailPage() {
         </h2>
 
         <div className="space-y-3">
-          {report.questions_feedback.map((item, idx) => {
+          {(report.questions_feedback || []).map((item, idx) => {
             const isOpen = expandedQIndex === idx;
             return (
               <div key={idx} className="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden backdrop-blur-xl shadow-lg transition-all">

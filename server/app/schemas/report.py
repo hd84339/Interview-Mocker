@@ -13,6 +13,7 @@ class ReportResponse(BaseModel):
     strengths: Optional[List[str]] = None
     improvements: Optional[List[str]] = None
     detailed_feedback: Optional[str] = None
+    questions_feedback: Optional[List[dict]] = None
     created_at: datetime
 
     class Config:

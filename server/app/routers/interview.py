@@ -26,7 +26,7 @@ class FlexibleInterviewCreate(BaseModel):
     resume_id: Union[int, None] = None
 
 
-@router.post("/", response_model=InterviewResponse)
+@router.post("", response_model=InterviewResponse)
 async def create_interview(
     interview_in: FlexibleInterviewCreate,
     db: Session = Depends(get_db),
@@ -44,7 +44,7 @@ async def create_interview(
     return await interview_service.create_interview(db, user_id=current_user.id, interview_in=final_in)
 
 
-@router.get("/", response_model=List[InterviewResponse])
+@router.get("", response_model=List[InterviewResponse])
 def get_user_interviews(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)

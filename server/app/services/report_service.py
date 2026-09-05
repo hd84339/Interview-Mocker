@@ -25,7 +25,8 @@ class ReportService:
             communication_score=ai_report.get("communication_score", 85.0),
             strengths=ai_report.get("strengths", []),
             improvements=ai_report.get("improvements", []),
-            detailed_feedback=ai_report.get("detailed_feedback", "")
+            detailed_feedback=ai_report.get("detailed_feedback", ""),
+            questions_feedback=ai_report.get("questions_feedback", [])
         )
         db.add(report)
         db.commit()

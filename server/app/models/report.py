@@ -15,4 +15,5 @@ class Report(Base):
     strengths = Column(JSON, nullable=True)
     improvements = Column(JSON, nullable=True)
     detailed_feedback = Column(Text, nullable=True)
+    questions_feedback = Column(JSON, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
