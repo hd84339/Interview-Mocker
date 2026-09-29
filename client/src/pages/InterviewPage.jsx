@@ -147,12 +147,10 @@ function InterviewPage() {
   }, [cameraActive]);
 
   // Speech Recognition (Web Speech API)
-  const toggleSpeechRecognition = () => {
+  const startSpeechRecognition = () => {
     if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-      alert("Speech recognition is not supported in this browser. Please type your response.");
       return;
     }
-
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!recognitionRef.current) {
       recognitionRef.current = new SpeechRecognition();
@@ -170,16 +168,25 @@ function InterviewPage() {
       recognitionRef.current.onend = () => setIsRecording(false);
     }
 
+    setIsRecording(true);
+    try {
+      recognitionRef.current.start();
+    } catch (e) {
+      console.error("Recognition already started", e);
+    }
+  };
+
+  const toggleSpeechRecognition = () => {
+    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+      alert("Speech recognition is not supported in this browser. Please type your response.");
+      return;
+    }
+    
     if (!isRecording) {
-      setIsRecording(true);
-      try {
-        recognitionRef.current.start();
-      } catch (e) {
-        console.error("Recognition already started", e);
-      }
+      startSpeechRecognition();
     } else {
       setIsRecording(false);
-      recognitionRef.current.stop();
+      if (recognitionRef.current) recognitionRef.current.stop();
     }
   };
 
@@ -198,7 +205,11 @@ function InterviewPage() {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.rate = 1.0;
       utterance.onstart = () => setAiSpeaking(true);
-      utterance.onend = () => setAiSpeaking(false);
+      utterance.onend = () => {
+        setAiSpeaking(false);
+        // Automatically turn on microphone and detect audio
+        startSpeechRecognition();
+      };
       window.speechSynthesis.speak(utterance);
     }
   };

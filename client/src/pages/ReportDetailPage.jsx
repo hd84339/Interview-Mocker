@@ -23,6 +23,7 @@ function ReportDetailPage() {
   const { id } = useParams();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [expandedQIndex, setExpandedQIndex] = useState(0);
 
   useEffect(() => {
@@ -32,6 +33,7 @@ function ReportDetailPage() {
         setReport(data);
       } catch (err) {
         console.error("Error loading report:", err);
+        setError("Failed to load interview report. It may not exist or the interview was aborted.");
       } finally {
         setLoading(false);
       }
@@ -50,12 +52,30 @@ function ReportDetailPage() {
     }
   };
 
-  if (loading || !report) {
+  if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center space-y-3">
           <div className="w-10 h-10 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm font-semibold text-slate-300">Generating AI Performance Report & Recommendations...</p>
+          <p className="text-sm font-semibold text-slate-300">Loading your interview report...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !report) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-center space-y-4 bg-slate-900/80 p-8 rounded-3xl border border-rose-500/20 max-w-md">
+          <AlertCircle className="w-12 h-12 text-rose-500 mx-auto" />
+          <h2 className="text-xl font-bold text-white">Report Not Found</h2>
+          <p className="text-sm text-slate-400">{error || "The interview report is unavailable or incomplete."}</p>
+          <button
+            onClick={() => navigate("/report")}
+            className="mt-4 px-6 py-2 rounded-xl bg-slate-800 text-slate-200 hover:bg-slate-700 font-semibold transition-all"
+          >
+            Back to Reports
+          </button>
         </div>
       </div>
     );
