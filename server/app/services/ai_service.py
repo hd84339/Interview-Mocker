@@ -30,11 +30,78 @@ class AIService:
         """
         Dynamically generates the next question based on the history and remaining time.
         """
-        # Mocked dynamic generation based on history length for now.
+        if not self.api_key:
+            logger.warning("No GEMINI_API_KEY found, using mock next question.")
+            return self._mock_next_question(history, role_title, company_name, difficulty)
+
+        history_text = "\n".join([
+            f"Q: {item.get('q', {}).get('question', item.get('q', {}).get('text', ''))}\n"
+            f"A: {item.get('a', {}).get('answer', '')}" 
+            for item in history
+        ])
+        
+        prompt = f"""
+You are an elite technical interviewer at '{company_name}' conducting an interview for the position of '{role_title}'.
+
+Interview Parameters:
+- Target Experience Level: {experience_level}
+- Interview Difficulty: {difficulty}
+- Remaining Time: {remaining_time_minutes} minutes
+
+Job Description & Requirements:
+{job_description}
+
+Candidate Resume Context (Retrieved via RAG):
+{resume_context}
+
+Interview History so far:
+{history_text if history_text else "No questions asked yet. This is the first question."}
+
+Instructions:
+Generate EXACTLY ONE highly targeted, realistic interview question aligned with the candidate's experience, the job requirements, and the difficulty tier. 
+Crucially, the question MUST be completely different from the previously asked questions in the history, but it should logically follow the conversation (e.g., diving deeper into a topic mentioned in their answer, or pivoting to a new topic from their resume if appropriate).
+Choose an appropriate question type: "technical", "behavioral", "system_design", or "coding".
+
+Return ONLY a valid JSON object with the following format:
+{{
+  "id": {len(history) + 1},
+  "type": "technical" | "behavioral" | "system_design" | "coding",
+  "question": "The question text tailored to the candidate and job role",
+  "evaluation_criteria": "Key points and technical nuances expected in a strong answer"
+}}
+"""
+        try:
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            response = model.generate_content(prompt)
+            text = response.text.strip()
+            
+            # Remove markdown JSON wrappers if present
+            if text.startswith("```json"):
+                text = text[7:]
+            if text.startswith("```"):
+                text = text[3:]
+            if text.endswith("```"):
+                text = text[:-3]
+                
+            q_data = json.loads(text.strip())
+            q_type = q_data.get("type", "technical")
+            question_text = q_data.get("question", "Could you elaborate on your experience?")
+            return {
+                "id": len(history) + 1,
+                "type": q_type,
+                "text": question_text,
+                "question": question_text,
+                "evaluation_criteria": q_data.get("evaluation_criteria", "Evaluate general experience."),
+                "language_options": ["python", "javascript", "cpp", "java"] if q_type == "coding" else []
+            }
+        except Exception as e:
+            logger.error(f"Failed to generate AI next question: {e}")
+            return self._mock_next_question(history, role_title, company_name, difficulty)
+
+    def _mock_next_question(self, history, role_title, company_name, difficulty):
         question_count = len(history)
         next_id = question_count + 1
         
-        # Decide question type based on history
         if question_count == 0:
             q_type = "behavioral"
             question = f"Welcome to the interview for {role_title} at {company_name}. Can you start by walking me through your background and how it aligns with this role?"

@@ -102,6 +102,14 @@ class InterviewService:
             return {"finished": True}
             
         # Generate next question
+        resume_context = "N/A"
+        if interview.resume_id:
+            query_str = f"{interview.role_title} {interview.job_description or ''}"
+            resume_context = await rag_service.query_resume_context(
+                resume_id=interview.resume_id,
+                query_text=query_str
+            )
+
         history = [{"q": q, "a": a} for q, a in zip(interview.questions, responses)]
         next_q = await ai_service.generate_next_question(
             history=history,
@@ -110,7 +118,7 @@ class InterviewService:
             company_name=interview.company_name,
             difficulty=interview.difficulty,
             job_description=interview.job_description,
-            resume_context="N/A",  # could refetch if needed
+            resume_context=resume_context,
             remaining_time_minutes=remaining_minutes
         )
         
