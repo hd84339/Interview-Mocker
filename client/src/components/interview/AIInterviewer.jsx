@@ -16,7 +16,7 @@ export default function AIInterviewer({
             <span>AI Interviewer</span>
           </span>
           <button
-            onClick={() => speakQuestionText(currentQuestion.text)}
+            onClick={() => speakQuestionText(currentQuestion.text || currentQuestion.question)}
             className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-xs font-semibold border border-indigo-500/20 transition-all"
           >
             <Volume2 className="w-3.5 h-3.5" />
@@ -53,13 +53,13 @@ export default function AIInterviewer({
         {/* Question Text Box */}
         <div className="bg-slate-950/70 border border-slate-800 rounded-2xl p-5 space-y-2">
           <div className="flex justify-between text-[11px] font-semibold text-slate-400">
-            <span>CATEGORY: {currentQuestion.category || "General"}</span>
+            <span>CATEGORY: {currentQuestion.category || currentQuestion.skill_focus || currentQuestion.type || "Technical"}</span>
             <span>
               Q{currentQIndex + 1}/{totalQuestions}
             </span>
           </div>
           <p className="text-base font-semibold text-white leading-relaxed">
-            "{currentQuestion.text}"
+            "{currentQuestion.text || currentQuestion.question}"
           </p>
         </div>
       </div>

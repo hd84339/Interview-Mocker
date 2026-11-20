@@ -11,6 +11,7 @@ class InterviewCreate(BaseModel):
     difficulty: str = "Medium"  # Easy, Medium, Hard, FAANG
     resume_id: Optional[int] = None
     duration: int = 30  # Duration in minutes
+    skills: Optional[List[str]] = None
 
 
 class InterviewResponse(BaseModel):

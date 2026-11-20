@@ -84,6 +84,8 @@ function CreateInterviewPage() {
         enableVoice,
         enableCamera,
         resumeId: resumeData?.id,
+        resume_id: resumeData?.id,
+        skills: resumeData?.skills || [],
       });
 
       // Save active session to session storage

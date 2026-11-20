@@ -24,6 +24,8 @@ class FlexibleInterviewCreate(BaseModel):
     type: str = "Technical"
     duration: int = 30
     resume_id: Union[int, None] = None
+    resumeId: Union[int, None] = None
+    skills: Union[List[str], None] = None
 
 
 @router.post("", response_model=InterviewResponse)
@@ -32,6 +34,7 @@ async def create_interview(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    actual_resume_id = interview_in.resume_id or interview_in.resumeId
     final_in = InterviewCreate(
         role_title=interview_in.role or interview_in.role_title,
         job_description=interview_in.job_description,
@@ -39,7 +42,8 @@ async def create_interview(
         experience_level=interview_in.level or interview_in.experience_level,
         difficulty=interview_in.difficulty,
         duration=interview_in.duration,
-        resume_id=interview_in.resume_id
+        resume_id=actual_resume_id,
+        skills=interview_in.skills
     )
     return await interview_service.create_interview(db, user_id=current_user.id, interview_in=final_in)
 
@@ -102,7 +106,9 @@ async def submit_answer(
 
     interview = interview_service.get_interview(db, interview_id=int_id)
     if not interview or interview.user_id != current_user.id:
-        return {"message": "Answer recorded successfully", "status": "recorded"}
+        raise HTTPException(status_code=404, detail="Interview not found or unauthorized")
 
     res = await interview_service.process_answer(db, int_id, body)
+    if not res:
+        raise HTTPException(status_code=400, detail="Failed to process answer")
     return res
